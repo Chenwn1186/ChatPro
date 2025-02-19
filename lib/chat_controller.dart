@@ -75,12 +75,35 @@ class ChatRecord {
     final file = File('chats/$title.json');
     final jsonList = messages.map((msg) => msg.toJson()).toList();
     final jsonString = json.encode(jsonList);
-    file.writeAsString(jsonString);
+    await file.writeAsString(jsonString);
   }
 
   void sendMessage(String message, bool left) {
     messages.add(ChatMsg(left: left, content: message));
     saveRecord();
+  }
+
+  // 新增实例方法，使用当前实例的 title 读取聊天记录
+  Future<ChatRecord?> readRecord() async {
+    final file = File('chats/$title.json');
+    if (await file.exists()) {
+      try {
+        final jsonString = await file.readAsString();
+        final jsonList = json.decode(jsonString) as List<dynamic>;
+        return ChatRecord.fromJson(title, jsonList);
+      } catch (e) {
+        print('读取聊天记录 $title 时出错: $e');
+      }
+    }
+    return null;
+  }
+
+  // 新增方法，获取最后 count 个记录并转换为 JSON 字符串
+  String getLastMessagesAsJson(int count) {
+    final startIndex = messages.length > count ? messages.length - count : 0;
+    final lastMessages = messages.sublist(startIndex);
+    final jsonList = lastMessages.map((msg) => msg.toJson()).toList();
+    return json.encode(jsonList);
   }
 }
 
@@ -131,7 +154,7 @@ class ChatController with ChangeNotifier {
         final chatRecord = ChatRecord.fromJson(title, jsonList);
         _chatRecords[title] = chatRecord;
       } catch (e) {
-        print('读取文件 ${file.path} 时出错: $e');
+        // print('读取文件 ${file.path} 时出错: $e');
       }
     }
     notifyListeners();
@@ -158,6 +181,29 @@ class ChatController with ChangeNotifier {
   void createChat(String title) {
     _chatRecords[title] = ChatRecord(title: title, messages: []);
     sendMessage(title, '你好，我是你的智能助理~', true);
+  }
+
+  // 清空指定对话的聊天记录
+  void clearChatRecord(String title) {
+    if (_chatRecords.containsKey(title)) {
+      _chatRecords[title]!.messages.clear();
+      _saveChatRecord(title);
+      notifyListeners();
+    }
+  }
+
+  // 删除指定对话的聊天记录及对应文件
+  Future<void> deleteChatRecord(String title) async {
+    if (_chatRecords.containsKey(title)) {
+      // 从内存中移除聊天记录
+      _chatRecords.remove(title);
+      // 删除对应的文件
+      final file = File('chats/$title.json');
+      if (await file.exists()) {
+        await file.delete();
+      }
+      notifyListeners();
+    }
   }
 
   // 保存指定对话的聊天记录到文件

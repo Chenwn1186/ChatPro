@@ -12,48 +12,67 @@ class ChatList extends StatelessWidget {
       selector: (_, myType) => myType.chatTitles,
       builder: (context, titles, child) {
         return Scaffold(
-            body: Expanded(
-                child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: titles.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(titles[index]),
+          body: ListView.builder(
+            itemCount: titles.length,
+            itemBuilder: (context, index) {
+              final title = titles[index];
+              return Card(
+                elevation: 4,
+                margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                child: ListTile(
+                  title: Text(title),
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
-                        builder: (_) => ChatPage(
-                              chatRecord:
-                                  ChatController().getChatRecord(titles[index]),
-                            )));
+                      builder: (_) => ChatPage(
+                        chatRecord: ChatController().getChatRecord(title),
+                      ),
+                    ));
                   },
-                );
-              },
-            )),
-            floatingActionButton: FloatingActionButton(
-              child: const Icon(Icons.add),
-              onPressed: () async {
-                String title = '_test_';
-                await showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                          title: const Text('输入标题'),
-                          content: TextField(
-                            onChanged: (value) {
-                              title = value;
-                            },
-                          ),
-                          actions: [
-                            TextButton(
-                                onPressed: () {
-                                  ChatController().createChat(title);
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('确定'))
-                          ]);
-                    });
-              },
-            ));
+                  trailing: IconButton(
+                    icon: const Icon(Icons.delete),
+                    onPressed: () async {
+                      await ChatController().deleteChatRecord(title);
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
+          floatingActionButton: FloatingActionButton(
+            child: const Icon(Icons.add),
+            onPressed: () async {
+              String title = '';
+              await showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text('输入标题'),
+                    content: TextField(
+                      onChanged: (value) {
+                        title = value;
+                      },
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          if (title.trim().isEmpty) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(content: Text('标题不能为空，请输入有效的标题')),
+                            );
+                          } else {
+                            ChatController().createChat(title);
+                            Navigator.of(context).pop();
+                          }
+                        },
+                        child: const Text('确定'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        );
       },
     );
   }
