@@ -313,8 +313,8 @@ class ChatController with ChangeNotifier {
             return path;
           }).toList();
           var imgDiscription = await analyseImg(title, imgPaths);
-          // var imgDiscription = json.decode(await analyseImg(title, imgPaths)) as Map<String, dynamic>;
-          var content = await Prompts().generateContent(title, message, imgDiscription, shortRecord, '');
+          var imgDiscription1 = json.decode(await analyseImg(title, imgPaths)).toString();
+          var content = await Prompts().generateContent(title, message, imgDiscription1, shortRecord, '');
           Logger.log('content: $content');
           var reply = OpenAIUserInteraction().sendMessage(content);
           reply.then((value) => sendMessage(title, value, true));

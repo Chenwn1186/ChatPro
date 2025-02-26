@@ -43,7 +43,7 @@ class OpenAIUserInteraction {
 
   // 初始化 OpenAI API 密钥
   void init() {
-    OpenAI.apiKey = "sk-dPrv6dBqbgs5mfgn5Qw264FgXjEO2cQ8n6GWhwav2pLX8hB4";
+    OpenAI.apiKey = "sk-8DVr1AaA2kogKdLUNo1NVj4Mg6o8NRsnPdlGbZAlrpPyey50";
     OpenAI.baseUrl = "https://xiaoai.plus";
   }
 
@@ -226,18 +226,18 @@ Return in JSON format: {"response": "...", "updated_image": null}
         maxTokens: 800,
       );
 
-      // String responseRaw =
-      //     chatCompletion.choices.first.message.content!.first.text!;
-      // // 处理回复，去除可能的JSON格式标记
-      // if (responseRaw.startsWith("```json")) {
-      //   responseRaw = responseRaw.substring(7, responseRaw.length - 3);
-      // }
-      // print("\nLLM response: $responseRaw \n");
-      // Map<String, dynamic> responseData = json.decode(responseRaw);
-      // // 获取回复内容
-      // String response = responseData["response"];
-      // // 获取更新后的图片信息
-      // String? updatedImage = responseData["updated_image"];
+      String responseRaw =
+          chatCompletion.choices.first.message.content!.first.text!;
+      // 处理回复，去除可能的JSON格式标记
+      if (responseRaw.startsWith("```json")) {
+        responseRaw = responseRaw.substring(7, responseRaw.length - 3);
+      }
+      print("\nLLM response: $responseRaw \n");
+      Map<String, dynamic> responseData = json.decode(responseRaw);
+      // 获取回复内容
+      String response = responseData["response"];
+      // 获取更新后的图片信息
+      String? updatedImage = responseData["updated_image"];
 
       // // 这里假设你有一个 MemoryModule 类来处理图片记忆
       // // 并且有对应的方法来更新和保存图片记忆
@@ -257,7 +257,7 @@ Return in JSON format: {"response": "...", "updated_image": null}
       // // 记录日志，显示最终的LLM回复
       // Logger.log("Final LLM response: $response");
 
-      String response = "我可能有些细节没记清，但你和姐姐的时光一定很美好，能再告诉我一些吗？";
+      // String response = "我可能有些细节没记清，但你和姐姐的时光一定很美好，能再告诉我一些吗？";
       return response;
     } catch (e, stackTrace) {
       // 记录日志，显示解析LLM回复为JSON时出错
