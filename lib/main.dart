@@ -4,6 +4,7 @@ import 'package:chat_pro/chat_list.dart';
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 void main() {
   runApp(const MainApp());
 }
@@ -17,7 +18,7 @@ class MainApp extends StatelessWidget {
     var width = size.width;
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => ChatController()), 
+        ChangeNotifierProvider(create: (_) => ChatController()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -44,9 +45,18 @@ class MainApp extends StatelessWidget {
               textStyle: const TextStyle().useSystemChineseFont(),
             ))),
         home: Scaffold(
-          body: Padding(
-            padding: EdgeInsets.only(left: width*0.2, right: width*0.2),
-            child: const ChatList(),
+          body: Row(
+            children: [
+              SizedBox(
+                width: width * 0.2,
+              ),
+              const Expanded(
+                child: ChatList(),
+              ),
+              SizedBox(
+                width: width * 0.2,
+              ),
+            ],
           ),
         ),
       ),

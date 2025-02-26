@@ -24,7 +24,7 @@ class ChatList extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => ChatPage(
-                        chatRecord: ChatController().getChatRecord(title),
+                        chatRecord: ChatController().getChat(title),
                       ),
                     ));
                   },
@@ -41,28 +41,26 @@ class ChatList extends StatelessWidget {
           floatingActionButton: FloatingActionButton(
             child: const Icon(Icons.add),
             onPressed: () async {
-              String title = '';
+              final TextEditingController titleController = TextEditingController();
               await showDialog(
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text('输入标题'),
+                    title: const Text('请输入标题'),
                     content: TextField(
-                      onChanged: (value) {
-                        title = value;
-                      },
+                      controller: titleController,
                     ),
                     actions: [
                       TextButton(
-                        onPressed: () {
-                          if (title.trim().isEmpty) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('标题不能为空，请输入有效的标题')),
-                            );
+                        onPressed: () async {
+                          String title = titleController.text.trim();
+                          if (title.isEmpty) {
+                            titleController.clear();
                           } else {
                             ChatController().createChat(title);
-                            Navigator.of(context).pop();
+                            
                           }
+                          Navigator.of(context).pop();
                         },
                         child: const Text('确定'),
                       ),
