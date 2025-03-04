@@ -253,7 +253,8 @@ class ChatController with ChangeNotifier {
     try {
       return _imgRecords['$title-imgs']!;
     } catch (e, stackTrace) {
-      Logger.logError('ChatController getImgRecordByTitle 方法出错: $e', stackTrace);
+      Logger.logError(
+          'ChatController getImgRecordByTitle 方法出错: $e', stackTrace);
       rethrow;
     }
   }
@@ -307,16 +308,18 @@ class ChatController with ChangeNotifier {
           Logger.log('选择图片：$selectedImgs');
           var imgPaths = selectedImgs.map((e) {
             String path = '';
-            if(e>=0) {
-              path = _imgRecords['$title-imgs']!.imgMDText.split('\n')[e-1];
+            if (e >= 0) {
+              path = _imgRecords['$title-imgs']!.imgMDText.split('\n')[e - 1];
             }
             return path;
           }).toList();
-          var imgDiscription = await analyseImg(title, imgPaths);
-          var imgDiscription1 = json.decode(await analyseImg(title, imgPaths)).toString();
-          var content = await Prompts().generateContent(title, message, imgDiscription1, shortRecord, '');
+          // var imgDiscription = await analyseImg(title, imgPaths);
+          var imgDiscription1 =
+              json.decode(await analyseImg(title, imgPaths)).toString();
+          var content = await Prompts()
+              .generateStrategy(message, imgDiscription1, shortRecord, '');
           Logger.log('content: $content');
-          var reply = OpenAIUserInteraction().sendMessage(content);
+          var reply = OpenAIUserInteraction().sendMessage(content['Response']);
           reply.then((value) => sendMessage(title, value, true));
         }
         notifyListeners();
