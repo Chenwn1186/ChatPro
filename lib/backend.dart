@@ -36,6 +36,8 @@ class OpenAIUserInteraction {
     return _instance;
   }
 
+  String model = "gpt-4o";
+
   // 私有构造函数，防止外部实例化
   OpenAIUserInteraction._internal() {
     init();
@@ -43,8 +45,10 @@ class OpenAIUserInteraction {
 
   // 初始化 OpenAI API 密钥
   void init() {
-    OpenAI.apiKey = "sk-8DVr1AaA2kogKdLUNo1NVj4Mg6o8NRsnPdlGbZAlrpPyey50";
+    OpenAI.apiKey = "sk-dPrv6dBqbgs5mfgn5Qw264FgXjEO2cQ8n6GWhwav2pLX8hB4";
     OpenAI.baseUrl = "https://xiaoai.plus";
+    // OpenAI.apiKey = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY";
+    // OpenAI.baseUrl = "https://wcode.net/api/gpt";
   }
 
   /// 发送信息并接收 OpenAI 的回复
@@ -55,7 +59,7 @@ class OpenAIUserInteraction {
       Logger.log('开始发送消息到 OpenAI: $message');
       // 创建一个聊天完成请求
       final chatCompletion = await OpenAI.instance.chat.create(
-        model: "gpt-4o",
+        model: model,
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
             role: OpenAIChatMessageRole.user,
@@ -97,7 +101,7 @@ class OpenAIUserInteraction {
       records ??= [];
       records.add(msg);
       var chatCompletion = OpenAI.instance.chat.createStream(
-        model: "gpt-4o",
+        model: model,
         messages: records,
         // maxTokens: 600,
       );
@@ -252,7 +256,7 @@ Future<String> analyseImg(String title, List<String> ipath) async {
   List<Future<String>> futureResults = [];
   // 检查是否有对应的解析后文件
   for (String imagePath in path) {
-    String resultFilePath = "${imagePath.split('.').first}.json";
+    String resultFilePath = imagePath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
     File resultFile = File(resultFilePath);
     if (resultFile.existsSync()) {
       var res =
@@ -317,3 +321,5 @@ Future<String> analyseImgOnline(String imagePath) async {
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
   return response.body;
 }
+
+

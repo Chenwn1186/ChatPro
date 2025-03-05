@@ -167,6 +167,22 @@ class Chat {
     }
   }
 
+  void setRecommendations(String recommendations) {
+    try {
+      if (content.isNotEmpty) {
+        var lastMsg = content.last;
+        lastMsg.content!.add(OpenAIChatCompletionChoiceMessageContentItemModel.text(
+          recommendations,
+        ));
+        content[content.length - 1] = lastMsg;
+        saveRecord();
+      } 
+    } 
+    catch (e, stackTrace) {
+      Logger.logError('Chat 设置推荐出错: $e', stackTrace); 
+    }
+  }
+
   void addMsg({required OpenAIChatMessageRole role, required String text}) {
     try {
       content.add(OpenAIChatCompletionChoiceMessageModel(
@@ -233,6 +249,14 @@ class Chat {
         if (content[index].role == OpenAIChatMessageRole.system) {
           return const SizedBox();
         }
+        if(content[index].content!.length > 1){
+          var rcm = content[index].content!.last.text!;
+          var rcmList = json.decode(rcm) as List<dynamic>;
+          if(rcmList.isNotEmpty){
+            var rcmList2 = rcmList.map((e) => e as String).toList();
+            return _build(mdMsg: msg, left: left, recommendations: rcmList2);
+          }
+        }
         return _build(mdMsg: msg, left: left);
       }
       return const SizedBox();
@@ -242,7 +266,7 @@ class Chat {
     }
   }
 
-  static Widget _build({required String mdMsg, required bool left}) {
+  static Widget _build({required String mdMsg, required bool left, List<String> recommendations = const []}) {
     try {
       if (left) {
         return ChatPageMsg(
@@ -253,6 +277,7 @@ class Chat {
           headTextColor: Colors.white,
           bgColor: const Color.fromARGB(255, 255, 204, 255),
           textColor: const Color.fromARGB(255, 166, 51, 243),
+          recommendations: recommendations,
         );
       } else {
         return ChatPageMsg(
@@ -263,6 +288,7 @@ class Chat {
           headTextColor: Colors.white,
           bgColor: const Color.fromARGB(255, 185, 225, 255),
           textColor: const Color.fromARGB(255, 6, 94, 166),
+          recommendations: recommendations,
         );
       }
     } catch (e, stackTrace) {
@@ -367,7 +393,6 @@ class ChatController with ChangeNotifier {
         );
         notifyListeners();
         if (!left) {
-          var shortRecord = _chats[title]!.getLastMsg(20);
           // var longRecord = await VectorDB().query(message, title, 6);
           Logger.log('选择图片：$selectedImgs');
           var imgPaths = selectedImgs.map((e) {
@@ -383,7 +408,7 @@ class ChatController with ChangeNotifier {
               json.decode(await analyseImg(title, imgPaths)).toString();
 
           var prompt =
-              Prompts().generateStrategyPrompt(imgDiscription, shortRecord, '');
+              Prompts().getPrompt('psychological_companion_reply');
           String content = '';
           
           _chats[title]!.setPrompt(prompt);
@@ -397,7 +422,12 @@ class ChatController with ChangeNotifier {
             Logger.log('llm 回复: $content');
             content = content.replaceAll('```json', '').replaceAll('```', '');
             updateImgMemory(title, content, imgPaths);
-            _chats[title]!.showAllRecords();
+            // _chats[title]!.showAllRecords();
+            var contentMap = json.decode(content) as Map<String, dynamic>;
+            print('contentMap: $contentMap');
+            var rcmStr = List<String>.from(contentMap['Recommendations']!);
+            _chats[title]!.setRecommendations(json.encode(rcmStr));
+            notifyListeners();
           }, records: _chats[title]!.getLastMsgModel(20));
         }
 

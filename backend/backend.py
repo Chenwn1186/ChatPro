@@ -57,11 +57,12 @@ def analyse_img():
         # 生成与大模型对话的字符串
         conversation_str = f"data:image/{image_format.lower()};base64,{img_base64}"
 
-        prompt = """根据提供的元数据 JSON 和图像，描述图像中的内容，包括人物、物体和事件。
-    以 JSON 格式返回响应，包含以下字段："时间"（精确时间、星期几、上午/下午/晚上）、
-    "地点"（位置）、"场景"（场景类型）、"人物"（包含描述的人物列表）、
-    "物体"（包含描述的物体列表）、"环境"（天气等）、
-    "活动"（包含描述的活动列表）、"情绪"（带有推理的情绪）,你要特别注意，如果没有识别到信息，直接在字段返回空，不要出现类似'未识别到信息'这种字眼。"""
+        prompt = """根据提供的元数据 JSON 和图像，你要尽可能详细地描述图像中的内容，包括人物、物体和事件。你要特别注意，如果以下某些字段不存在，直接返回""或者[]。
+    以 JSON 格式返回响应，包含以下字段："时间"（精确时间、星期几、上午/下午/晚上，是字符串）、
+    "地点"（位置，是字符串）、"场景"（场景类型，是字符串）、"人物"（包含描述的人物，是字符串的列表）、
+    "物体"（包含描述的物体，是字符串的列表）、"环境"（天气等，是字符串）、
+    "活动"（包含描述的活动，是字符串的列表）、"情绪"（带有推理的情绪，是字符串）。
+    """
     
         # 调用OpenAI API获取大模型的回复
         response = get_openai_response(conversation_str, yolo_results, metadata, prompt)
@@ -103,7 +104,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
             ],
         },
     ]
-    print(f"构建的消息内容: {image_url[:30]}")
+    # print(f"构建的消息内容: {image_url[:30]}")
 
     try:
         # 调用 OpenAI 接口获取结果
@@ -130,7 +131,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
     logging.info(f"起始时间: {start_time_str}, 获取大模型回复所消耗的时间: {elapsed_time} 秒")
 
     result = completion.choices[0].message.content
-    logging.info(f"大模型回复结果: {result}")
+    # logging.info(f"大模型回复结果: {result}")
     get_money()
     return result
 

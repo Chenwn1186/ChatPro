@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-
 class ChatPageMsg extends StatelessWidget {
   const ChatPageMsg(
       {super.key,
@@ -11,7 +10,8 @@ class ChatPageMsg extends StatelessWidget {
       required this.headBGColor,
       required this.headTextColor,
       required this.bgColor,
-      required this.textColor});
+      required this.textColor,
+      required this.recommendations});
 
   ///markdown message
   final String mdMsg;
@@ -21,6 +21,7 @@ class ChatPageMsg extends StatelessWidget {
   final Color headTextColor;
   final Color bgColor;
   final Color textColor;
+  final List<String> recommendations;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -42,25 +43,48 @@ class ChatPageMsg extends StatelessWidget {
               borderRadius: BorderRadius.circular(16),
             ),
             color: bgColor,
-            child: Markdown(
-              selectable: true,
-              data: mdMsg,
-              shrinkWrap: true,
-              styleSheet: MarkdownStyleSheet(
-                p: TextStyle(color: textColor), // 修改段落文字颜色
-                h1: TextStyle(color: textColor), // 修改一级标题文字颜色
-                h2: TextStyle(color: textColor), // 修改二级标题文字颜色
-                h3: TextStyle(color: textColor), // 修改三级标题文字颜色
-                h4: TextStyle(color: textColor), // 修改四级标题文字颜色
-                h5: TextStyle(color: textColor), // 修改五级标题文字颜色
-                h6: TextStyle(color: textColor), // 修改六级标题文字颜色
-                blockquote: TextStyle(color: textColor), // 修改引用文字颜色
-                codeblockDecoration: BoxDecoration(
-                  color: Colors.black, // 修改代码块背景颜色
-                  borderRadius: BorderRadius.circular(8),
+            child: Column(
+              children: [
+                Markdown(
+                  selectable: true,
+                  data: mdMsg,
+                  shrinkWrap: true,
+                  styleSheet: MarkdownStyleSheet(
+                    p: TextStyle(color: textColor), // 修改段落文字颜色
+                    h1: TextStyle(color: textColor), // 修改一级标题文字颜色
+                    h2: TextStyle(color: textColor), // 修改二级标题文字颜色
+                    h3: TextStyle(color: textColor), // 修改三级标题文字颜色
+                    h4: TextStyle(color: textColor), // 修改四级标题文字颜色
+                    h5: TextStyle(color: textColor), // 修改五级标题文字颜色
+                    h6: TextStyle(color: textColor), // 修改六级标题文字颜色
+                    blockquote: TextStyle(color: textColor), // 修改引用文字颜色
+                    codeblockDecoration: BoxDecoration(
+                      color: Colors.black, // 修改代码块背景颜色
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    code: const TextStyle(color: Colors.white70), // 修改代码文字颜色
+                  ),
                 ),
-                code: const TextStyle(color: Colors.white70), // 修改代码文字颜色
-              ),
+                Column(
+                  children: recommendations
+                      .map((e) => Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Align(
+                              alignment: Alignment.topLeft,
+                              child: Card(
+                                elevation: 0,
+                                shape: ContinuousRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: Padding(
+                                    padding: const EdgeInsets.all(6),
+                                    child: Text(e)),
+                              ),
+                            ),
+                      ))
+                      .toList(),
+                )
+              ],
             ),
           ),
         ),

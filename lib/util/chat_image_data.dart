@@ -24,23 +24,33 @@ class ChatImageData {
     return Container(
       // color: Colors.blue,
       alignment: Alignment.center,
-      child: SizedBox(
-        width: size.width * 0.25,
-        height: size.width * 0.25,
-        child: Column(
-          children: [
-            const Spacer(),
-            ChatImageDataItem(title: '时间', content: time, width: size.width * 0.20),
-            ChatImageDataItem(title: '地点', content: location, width: size.width * 0.20),
-            ChatImageDataItem(title: '场景', content: scene, width: size.width * 0.20),
-            ChatImageDataItem(title: '人物', content: people.join('，'), width: size.width * 0.20),
-            ChatImageDataItem(title: '物体', content: objects.join('，'), width: size.width * 0.20),
-            ChatImageDataItem(title: '环境', content: environment, width: size.width * 0.20),
-            ChatImageDataItem(title: '活动', content: activitity.join('，'), width: size.width * 0.20),
-            ChatImageDataItem(title: '情绪', content: emotion, width: size.width * 0.20),
-            ChatImageDataItem(title: '描述', content: describe, width: size.width * 0.20),
-            const Spacer(),
-          ],
+      child: Center(
+        child: SizedBox(
+          width: size.width * 0.25,
+          height: size.width * 0.25,
+          child: Column(
+            children: [
+              Spacer(),
+              SingleChildScrollView(
+                child: Column(
+                  children: [
+                    // const Spacer(),
+                    ChatImageDataItem(title: '时间', content: time, width: size.width * 0.20),
+                    ChatImageDataItem(title: '地点', content: location, width: size.width * 0.20),
+                    ChatImageDataItem(title: '场景', content: scene, width: size.width * 0.20),
+                    ChatImageDataItem(title: '人物', content: people.join('，'), width: size.width * 0.20),
+                    ChatImageDataItem(title: '物体', content: objects.join('，'), width: size.width * 0.20),
+                    ChatImageDataItem(title: '环境', content: environment, width: size.width * 0.20),
+                    ChatImageDataItem(title: '活动', content: activitity.join('，'), width: size.width * 0.20),
+                    ChatImageDataItem(title: '情绪', content: emotion, width: size.width * 0.20),
+                    ChatImageDataItem(title: '描述', content: describe, width: size.width * 0.20),
+                    // const Spacer(),
+                  ],
+                ),
+              ),
+              Spacer(),
+            ],
+          ),
         ),
       ),
     );

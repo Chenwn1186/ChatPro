@@ -106,8 +106,8 @@ class _ChatPageState extends State<ChatPage> {
                     var imgs = data.$1.split('\n');
 
                     return Card(
-                        color: const Color.fromARGB(255, 229, 229, 229),
-                        elevation: 4,
+                        color: const Color.fromARGB(200, 229, 229, 229),
+                        elevation: 0,
                         shape: ContinuousRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),
