@@ -213,16 +213,15 @@ class Chat {
     }
   }
 
-  void showAllRecords(){
+  void showAllRecords() {
     try {
       Logger.log('===========================所有聊天记录=========================');
       var res = content.map((e) => e.toMap().toString()).toList();
-      for(var r in res){
+      for (var r in res) {
         Logger.log(r);
       }
-    }
-    catch(e, stackTrace){
-      Logger.logError('Chat 显示所有记录出错: $e', stackTrace); 
+    } catch (e, stackTrace) {
+      Logger.logError('Chat 显示所有记录出错: $e', stackTrace);
     }
   }
 
@@ -378,6 +377,7 @@ class ChatController with ChangeNotifier {
             }
             return path;
           }).toList();
+          Logger.log('用户选择的图片：$imgPaths');
           var imgDiscription =
               json.decode(await analyseImg(title, imgPaths)).toString();
 
@@ -386,7 +386,7 @@ class ChatController with ChangeNotifier {
           String content = '';
           sendMessage(title, '正在思考中...', true);
           _chats[title]!.setPrompt(prompt);
-          OpenAIUserInteraction().sendMessageWithStream(
+          await OpenAIUserInteraction().sendMessageWithStream(
               '图片解析结果：$imgDiscription, \n用户输入: $message', (event) {
             final firstCompletionChoice = event.choices.first;
             content += firstCompletionChoice.delta.content?.first?.text ?? '';
@@ -437,6 +437,7 @@ class ChatController with ChangeNotifier {
         List<String> updatedImg =
             updatedImgList.map((e) => e.toString()).toList();
         Logger.log('updateImg: $updatedImg');
+        Logger.log('imgPaths: $imgPaths');
         // 确保 updatedImg 的长度和 imgPaths 的长度一致
         if (updatedImg.length == imgPaths.length) {
           for (int i = 0; i < imgPaths.length; i++) {
@@ -553,13 +554,12 @@ class ChatController with ChangeNotifier {
         var imgDiscription =
             json.decode(await analyseImg(title, imgPaths)).toString();
 
-        var prompt =
-            Prompts().getPrompt("summary_prompt");
+        var prompt = Prompts().getPrompt("summary_prompt");
         String content = '';
         sendMessage(title, '正在总结中...', true);
         _chats[title]!.setPrompt(prompt);
-        OpenAIUserInteraction().sendMessageWithStream(
-            '图片解析结果：$imgDiscription', (event) {
+        OpenAIUserInteraction().sendMessageWithStream('图片解析结果：$imgDiscription',
+            (event) {
           final firstCompletionChoice = event.choices.first;
           content += firstCompletionChoice.delta.content?.first?.text ?? '';
           _chats[title]!.setLastMsg(content);
@@ -569,7 +569,7 @@ class ChatController with ChangeNotifier {
         }, records: _chats[title]!.getLastMsgModel(20));
 
         notifyListeners();
-        
+
         _chats[title]!.showAllRecords();
       }
     } catch (e, stackTrace) {

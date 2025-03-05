@@ -92,7 +92,8 @@ class OpenAIUserInteraction {
           message,
         ),
       ];
-      var msg = OpenAIChatCompletionChoiceMessageModel(role: OpenAIChatMessageRole.user, content: content);
+      var msg = OpenAIChatCompletionChoiceMessageModel(
+          role: OpenAIChatMessageRole.user, content: content);
       records ??= [];
       records.add(msg);
       var chatCompletion = OpenAI.instance.chat.createStream(
@@ -102,8 +103,7 @@ class OpenAIUserInteraction {
       );
       chatCompletion.listen(onData, onDone: onDone);
       Logger.log('===========================聊天记录=========================');
-      for(var i in records){
-        
+      for (var i in records) {
         Logger.log('${i.role}: ${i.content}');
       }
     } catch (e, stackTrace) {
@@ -224,8 +224,8 @@ class Prompts {
     }
   }
 
-  String generateStrategyPrompt(String imgDiscription,
-      String shortRecord, String longRecord) {
+  String generateStrategyPrompt(
+      String imgDiscription, String shortRecord, String longRecord) {
     try {
       Logger.log('开始生成策略');
       var prompt = getPrompt('psychological_companion_reply');
@@ -242,7 +242,8 @@ class Prompts {
 }
 
 //todo 图片解析, 分对话建立索引：图片哈希值-解析结果
-Future<String> analyseImg(String title, List<String> path) async {
+Future<String> analyseImg(String title, List<String> ipath) async {
+  var path = ipath.map((e) => e).toList();
   if (path.isEmpty) {
     return '{"description": "未提供有效图片路径: ${path.toString()}", "tags": []}';
   }
@@ -314,4 +315,3 @@ Future<String> analyseImgOnline(String imagePath) async {
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
   return response.body;
 }
-
