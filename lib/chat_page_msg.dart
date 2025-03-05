@@ -38,7 +38,7 @@ class ChatPageMsg extends StatelessWidget {
         const SizedBox(width: 3),
         Expanded(
           child: Card(
-            elevation: 4,
+            elevation: 0,
             shape: ContinuousRectangleBorder(
               borderRadius: BorderRadius.circular(16),
             ),
@@ -75,6 +75,10 @@ class ChatPageMsg extends StatelessWidget {
                                 elevation: 0,
                                 shape: ContinuousRectangleBorder(
                                   borderRadius: BorderRadius.circular(10),
+                                  side: const BorderSide(
+                                    color: Color.fromARGB(255, 216, 216, 216),
+                                    width: 1,
+                                  ),
                                 ),
                                 child: Padding(
                                     padding: const EdgeInsets.all(6),

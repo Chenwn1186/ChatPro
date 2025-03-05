@@ -275,8 +275,8 @@ class Chat {
           imgText: '小助手',
           headBGColor: const Color.fromARGB(255, 166, 51, 243),
           headTextColor: Colors.white,
-          bgColor: const Color.fromARGB(255, 255, 204, 255),
-          textColor: const Color.fromARGB(255, 166, 51, 243),
+          bgColor: const Color.fromARGB(205, 224, 222, 255),
+          textColor: const Color.fromARGB(255, 71, 48, 87),
           recommendations: recommendations,
         );
       } else {
@@ -286,8 +286,8 @@ class Chat {
           imgText: '用户',
           headBGColor: const Color.fromARGB(255, 6, 94, 166),
           headTextColor: Colors.white,
-          bgColor: const Color.fromARGB(255, 185, 225, 255),
-          textColor: const Color.fromARGB(255, 6, 94, 166),
+          bgColor: const Color.fromARGB(205, 214, 233, 248),
+          textColor: const Color.fromARGB(255, 16, 112, 186),
           recommendations: recommendations,
         );
       }
