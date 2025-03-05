@@ -378,13 +378,14 @@ class ChatController with ChangeNotifier {
             return path;
           }).toList();
           Logger.log('用户选择的图片：$imgPaths');
+          sendMessage(title, '正在思考中...', true);
           var imgDiscription =
               json.decode(await analyseImg(title, imgPaths)).toString();
 
           var prompt =
               Prompts().generateStrategyPrompt(imgDiscription, shortRecord, '');
           String content = '';
-          sendMessage(title, '正在思考中...', true);
+          
           _chats[title]!.setPrompt(prompt);
           await OpenAIUserInteraction().sendMessageWithStream(
               '图片解析结果：$imgDiscription, \n用户输入: $message', (event) {
@@ -439,11 +440,13 @@ class ChatController with ChangeNotifier {
             updatedImgList.map((e) => e.toString()).toList();
         Logger.log('updateImg: $updatedImg');
         Logger.log('imgPaths: $imgPaths');
+
         // 确保 updatedImg 的长度和 imgPaths 的长度一致
         if (updatedImg.length == imgPaths.length) {
           for (int i = 0; i < imgPaths.length; i++) {
             String imgPath = imgPaths[i];
-            String jsonPath = imgPath.replaceAll(RegExp(r'\.\w+$'), '.json');
+            if(updatedImg[i].isEmpty) continue;
+            String jsonPath = imgPath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
 
             // 创建 File 对象
             File jsonFile = File(jsonPath);
@@ -457,6 +460,7 @@ class ChatController with ChangeNotifier {
 
             // 添加新的键值对
             jsonData['更新描述'] = updatedImg[i];
+            notifyListeners();
 
             // 将更新后的内容写入 JSON 文件
             jsonFile.writeAsStringSync(json.encode(jsonData));

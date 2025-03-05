@@ -61,7 +61,7 @@ def analyse_img():
     以 JSON 格式返回响应，包含以下字段："时间"（精确时间、星期几、上午/下午/晚上）、
     "地点"（位置）、"场景"（场景类型）、"人物"（包含描述的人物列表）、
     "物体"（包含描述的物体列表）、"环境"（天气等）、
-    "活动"（包含描述的活动列表）、"情绪"（带有推理的情绪）"""
+    "活动"（包含描述的活动列表）、"情绪"（带有推理的情绪）,你要特别注意，如果没有识别到信息，直接在字段返回空，不要出现类似'未识别到信息'这种字眼。"""
     
         # 调用OpenAI API获取大模型的回复
         response = get_openai_response(conversation_str, yolo_results, metadata, prompt)
@@ -141,7 +141,7 @@ def get_money():
 
     payload = {}
     headers = {
-    'Authorization': f'Bearer {API_KEY}'  # <-------- TODO: 替换这里的 API_KEY
+    'Authorization': f'Bearer {API_KEY}'
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
