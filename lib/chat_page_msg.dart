@@ -1,32 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
-// class ChatMsg {
-//   static Widget build(
-//       {required String mdMsg, required bool left}) {
-//     if (left) {
-//       return ChatPageMsg(
-//         left: left,
-//         mdMsg: mdMsg,
-//         imgText: '666',
-//         headBGColor: const Color.fromARGB(255, 166, 51, 243),
-//         headTextColor: Colors.white,
-//         bgColor: const Color.fromARGB(255, 255, 204, 255),
-//         textColor: const Color.fromARGB(255, 166, 51, 243),
-//       );
-//     } else {
-//       return ChatPageMsg(
-//         left: left,
-//         mdMsg: mdMsg,
-//         imgText: '奶龙',
-//         headBGColor: const Color.fromARGB(255, 6, 94, 166),
-//         headTextColor: Colors.white,
-//         bgColor: const Color.fromARGB(255, 185, 225, 255),
-//         textColor: const Color.fromARGB(255, 6, 94, 166),
-//       );
-//     }
-//   }
-// }
 
 class ChatPageMsg extends StatelessWidget {
   const ChatPageMsg(

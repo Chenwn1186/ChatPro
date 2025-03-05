@@ -394,6 +394,7 @@ class ChatController with ChangeNotifier {
             notifyListeners();
           }, () {
             Logger.log('llm 回复: $content');
+            content = content.replaceAll('```json', '').replaceAll('```', '');
             updateImgMemory(title, content, imgPaths);
             _chats[title]!.showAllRecords();
           }, records: _chats[title]!.getLastMsgModel(20));
@@ -495,7 +496,10 @@ class ChatController with ChangeNotifier {
       notifyListeners();
       sendMessage(title, "正在思考中...", true);
       var str = Guidance().generateGuidanceMessage();
-      str.then((value) => _chats[title]!.setLastMsg(value));
+      str.then((value) {
+        _chats[title]!.setLastMsg(value);
+        notifyListeners();
+      });
     } catch (e, stackTrace) {
       Logger.logError('ChatController createChat 方法出错: $e', stackTrace);
     }

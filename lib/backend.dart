@@ -85,7 +85,7 @@ class OpenAIUserInteraction {
       void Function()? onDone,
       {List<OpenAIChatCompletionChoiceMessageModel>? records}) async {
     try {
-      Logger.log('开始发送消息到 OpenAI: $message');
+      // Logger.log('开始发送消息到 OpenAI: $message');
       // 创建一个聊天完成请求
       var content = [
         OpenAIChatCompletionChoiceMessageContentItemModel.text(
@@ -102,10 +102,10 @@ class OpenAIUserInteraction {
         // maxTokens: 600,
       );
       chatCompletion.listen(onData, onDone: onDone);
-      Logger.log('===========================聊天记录=========================');
-      for (var i in records) {
-        Logger.log('${i.role}: ${i.content}');
-      }
+      // Logger.log('===========================聊天记录=========================');
+      // for (var i in records) {
+      //   Logger.log('${i.role}: ${i.content}');
+      // }
     } catch (e, stackTrace) {
       Logger.logError('发送消息到 OpenAI with stream时出错: $e', stackTrace);
     }
@@ -302,12 +302,14 @@ Future<String> analyseImgOnline(String imagePath) async {
   var responseBody = await streamResponse.stream.bytesToString();
   var response = http.Response(responseBody, streamResponse.statusCode);
   if (response.statusCode == 200) {
+    
+    var bodyMap = json.decode(response.body) as Map<String, dynamic>;
     // 打印结果
-    Logger.log('解析图片结果:${response.body}');
+    Logger.log('解析图片结果:${bodyMap['result']}');
     // 保存结果到文件
-    String resultFilePath = "${imagePath.split('.').first}.json";
+    String resultFilePath = imagePath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
     File resultFile = File(resultFilePath);
-    resultFile.writeAsStringSync(response.body,
+    resultFile.writeAsStringSync(bodyMap['result'],
         mode: FileMode.write,
         encoding: Encoding.getByName('utf-8')!); // 以 UTF-8 编码写入文件
     return response.body;

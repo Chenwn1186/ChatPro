@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:chat_pro/chat_controller.dart';
+import 'package:chat_pro/ui/pura_multiple_radial_gradients.dart';
+import 'package:chat_pro/util/chat_image_data.dart';
 import 'package:chat_pro/util/file_utils.dart';
 import 'package:dart_openai/dart_openai.dart';
 // import 'package:chat_pro/chat_page_msg.dart';
@@ -47,106 +49,193 @@ class _ChatPageState extends State<ChatPage> {
           },
         ),
       ),
-      body: Row(
+      backgroundColor: Colors.transparent,
+      body: Stack(
         children: [
-          SizedBox(
-            width: width * 0.25,
+          PuraMultipleRadialGradients(
+            inputPoints: [
+              InputPoint(
+                const Offset(0.25, 0.25),
+                const Color.fromARGB(255, 54, 70, 244),
+                0.19,
+                0.25,
+                const Duration(seconds: 2),
+              ),
+              InputPoint(
+                const Offset(0.75, 0.25),
+                Colors.blue,
+                0.28,
+                0.35,
+                const Duration(seconds: 3),
+              ),
+              InputPoint(
+                const Offset(0.6, 0.75),
+                const Color.fromARGB(255, 76, 172, 175),
+                0.26,
+                0.38,
+                const Duration(seconds: 4),
+              ),
+              InputPoint(
+                const Offset(0.4, 0.5),
+                const Color.fromARGB(255, 221, 154, 225),
+                0.12,
+                0.28,
+                const Duration(seconds: 2, microseconds: 450),
+              ),
+              InputPoint(
+                const Offset(0.1, 0.8),
+                const Color.fromARGB(255, 0, 250, 129),
+                0.12,
+                0.18,
+                const Duration(seconds: 2, microseconds: 450),
+              ),
+            ],
+            backgroundColor: Colors.white,
           ),
-          Expanded(
-            child: Column(
-              children: [
-                Selector<ChatController,
-                    List<OpenAIChatCompletionChoiceMessageModel>>(
-                  // 修改为调用新的方法
-                  selector: (_, myType) =>
-                      myType.getChat(widget.chatRecord.title).content,
+          Row(
+            children: [
+              SizedBox(
+                width: width * 0.5,
+                child: Selector<ChatController, (String, List<int>)>(
+                  selector: (_, myType) => (
+                    myType.getImgsText(widget.chatRecord.title),
+                    myType.selectedImgs
+                  ),
                   shouldRebuild: (previous, next) => true,
-                  builder: (context, messages, child) {
-                    // 当消息列表更新时，滚动到最底部
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      if (_scrollController.hasClients) {
-                        _scrollController
-                            .jumpTo(_scrollController.position.maxScrollExtent);
-                      }
-                    });
-                    return Expanded(
-                      child: ListView.builder(
-                        controller: _scrollController,
-                        itemCount: messages.length,
-                        itemBuilder: (BuildContext context, int index) {
-                          return widget.chatRecord.buildWidget(index);
-                        },
-                      ),
-                    );
+                  builder: (context, data, child) {
+                    var imgs = data.$1.split('\n');
+
+                    return Card(
+                        color: const Color.fromARGB(255, 229, 229, 229),
+                        elevation: 4,
+                        shape: ContinuousRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListView.builder(
+                            itemCount: imgs.length + 1,
+                            itemBuilder: (BuildContext context, int index) {
+                              if (index == 0) {
+                                return const Text(
+                                  '  图片',
+                                  style: TextStyle(fontSize: 22),
+                                );
+                              }
+                              if (imgs[index - 1].isEmpty) {
+                                return const SizedBox();
+                              }
+                              return Card(
+                                child: Row(
+                                  children: [
+                                    SizedBox(
+                                      width: width * 0.22,
+                                      height: width * 0.22,
+                                      child: InkWell(
+                                        onTap: () {
+                                          // 处理点击事件
+                                          // print('点击了图片 ${imgs[index]}');
+                                          if (ChatController()
+                                              .selectedImgs
+                                              .contains(index)) {
+                                            ChatController()
+                                                .selectedImgs
+                                                .remove(index);
+                                          } else {
+                                            ChatController()
+                                                .selectedImgs
+                                                .add(index);
+                                          }
+                                          ChatController().update();
+                                        },
+                                        child: Padding(
+                                          padding: const EdgeInsets.only(
+                                              bottom: 4.0, top: 4.0),
+                                          child: Material(
+                                              color: const Color.fromARGB(
+                                                  0, 59, 173, 255),
+                                              shape: ContinuousRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                              ),
+                                              clipBehavior: Clip.antiAlias,
+                                              child: Padding(
+                                                padding: !ChatController()
+                                                        .selectedImgs
+                                                        .contains(index)
+                                                    ? const EdgeInsets.all(0.0)
+                                                    : const EdgeInsets.all(8.0),
+                                                child: Container(
+                                                    clipBehavior:
+                                                        Clip.antiAlias,
+                                                    decoration: ShapeDecoration(
+                                                        shape:
+                                                            ContinuousRectangleBorder(
+                                                      side: BorderSide(
+                                                          width: 3, 
+                                                          color: !ChatController().selectedImgs.contains(index)? Colors.transparent: Colors.blue,
+                                                      ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                    )),
+                                                    child: Image.file(
+                                                        File(imgs[index - 1]))),
+                                              )),
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: width * 0.25,
+                                      child: ChatImageData(index-1, title: widget.chatRecord.title).buildWidget(context),
+                                    )
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ));
                   },
                 ),
-                Stack(children: [
-                  ChatInputField(title: widget.chatRecord.title),
-                ])
-              ],
-            ),
-          ),
-          SizedBox(
-            width: width * 0.25,
-            child: Selector<ChatController, (String, List<int>)>(
-              selector: (_, myType) =>
-                  (myType.getImgsText(widget.chatRecord.title), myType.selectedImgs),
-                  shouldRebuild: (previous, next) => true,
-              builder: (context, data, child) {
-                var imgs = data.$1.split('\n');
-
-                return Card(
-                    elevation: 4,
-                    shape: ContinuousRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ListView.builder(
-                        itemCount: imgs.length + 1,
-                        itemBuilder: (BuildContext context, int index) {
-                          if (index == 0) {
-                            return const Text(
-                              '图片',
-                              style: TextStyle(fontSize: 22),
-                            );
+              ),
+              // SizedBox(
+              //   width: width * 0.25,
+              // ),
+              Expanded(
+                child: Column(
+                  children: [
+                    Selector<ChatController,
+                        List<OpenAIChatCompletionChoiceMessageModel>>(
+                      // 修改为调用新的方法
+                      selector: (_, myType) =>
+                          myType.getChat(widget.chatRecord.title).content,
+                      shouldRebuild: (previous, next) => true,
+                      builder: (context, messages, child) {
+                        // 当消息列表更新时，滚动到最底部
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (_scrollController.hasClients) {
+                            _scrollController.jumpTo(
+                                _scrollController.position.maxScrollExtent);
                           }
-                          if (imgs[index - 1].isEmpty) {
-                            return const SizedBox();
-                          }
-                          return InkWell(
-                            onTap: () {
-                              // 处理点击事件
-                              // print('点击了图片 ${imgs[index]}');
-                              if (ChatController()
-                                  .selectedImgs
-                                  .contains(index)) {
-                                ChatController().selectedImgs.remove(index);
-                              } else {
-                                ChatController().selectedImgs.add(index);
-                              }
-                              ChatController().update();
+                        });
+                        return Expanded(
+                          child: ListView.builder(
+                            controller: _scrollController,
+                            itemCount: messages.length,
+                            itemBuilder: (BuildContext context, int index) {
+                              return widget.chatRecord.buildWidget(index);
                             },
-                            child: Padding(
-                              padding:
-                                  const EdgeInsets.only(bottom: 4.0, top: 4.0),
-                              child: Material(
-                                color: const Color.fromARGB(255, 59, 173, 255),
-                                  shape: ContinuousRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  clipBehavior: Clip.antiAlias,
-                                  child: Padding(
-                                    padding: !ChatController().selectedImgs.contains(index)?const EdgeInsets.all(0.0): const EdgeInsets.all(8.0),
-                                    child: Image.file(File(imgs[index - 1])),
-                                  )),
-                            ),
-                          );
-                        },
-                      ),
-                    ));
-              },
-            ),
+                          ),
+                        );
+                      },
+                    ),
+                    Stack(children: [
+                      ChatInputField(title: widget.chatRecord.title),
+                    ])
+                  ],
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -212,9 +301,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
               ),
             ),
-            IconButton(onPressed: () {
-              ChatController().summarize(widget.title);
-            }, icon: const Icon(Icons.done_all_outlined), tooltip: "总结",),
+            IconButton(
+              onPressed: () {
+                ChatController().summarize(widget.title);
+              },
+              icon: const Icon(Icons.done_all_outlined),
+              tooltip: "总结",
+            ),
             IconButton(
               icon: const Icon(Icons.photo),
               tooltip: "上传图片",
@@ -244,7 +337,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
                   }
 
                   ChatController().updateImgs(widget.title, imgMDText);
-
                 }
               },
             ),
