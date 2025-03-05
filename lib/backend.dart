@@ -43,7 +43,8 @@ class OpenAIUserInteraction {
 
   // 初始化 OpenAI API 密钥
   void init() {
-    OpenAI.apiKey = "sk-8DVr1AaA2kogKdLUNo1NVj4Mg6o8NRsnPdlGbZAlrpPyey50";
+    // OpenAI.apiKey = "sk-8DVr1AaA2kogKdLUNo1NVj4Mg6o8NRsnPdlGbZAlrpPyey50";
+    OpenAI.apiKey = "sk-dPrv6dBqbgs5mfgn5Qw264FgXjEO2cQ8n6GWhwav2pLX8hB4";
     OpenAI.baseUrl = "https://xiaoai.plus";
   }
 
@@ -302,7 +303,6 @@ Future<String> analyseImgOnline(String imagePath) async {
   var responseBody = await streamResponse.stream.bytesToString();
   var response = http.Response(responseBody, streamResponse.statusCode);
   if (response.statusCode == 200) {
-    
     var bodyMap = json.decode(response.body) as Map<String, dynamic>;
     // 打印结果
     Logger.log('解析图片结果:${bodyMap['result']}');
