@@ -94,6 +94,8 @@ class ImgRecord {
 class Chat {
   late String title;
   late List<OpenAIChatCompletionChoiceMessageModel> content;
+  // late List<OpenAIChatCompletionChoiceMessageModel> prompts;
+  late OpenAIChatCompletionChoiceMessageModel prompt;
   Chat({required this.title, required this.content});
   Chat.fromPath(String path) {
     try {
@@ -110,6 +112,24 @@ class Chat {
       Logger.logError('Chat 从路径创建实例出错: $e', stackTrace);
     }
   }
+  void setLastMsg(String lastMsg) {
+    try {
+      if (content.isNotEmpty) {
+        content.last = OpenAIChatCompletionChoiceMessageModel(
+          role: OpenAIChatMessageRole.assistant,
+          content: [
+            OpenAIChatCompletionChoiceMessageContentItemModel.text(
+              lastMsg,
+            ),
+          ],
+        );
+        saveRecord();
+      }
+    } catch (e, stackTrace) {
+      Logger.logError('Chat 设置最后消息出错: $e', stackTrace);
+    }
+  }
+
   void saveRecord() {
     try {
       final file = File('chats/$title.json');
@@ -129,6 +149,21 @@ class Chat {
       saveRecord();
     } catch (e, stackTrace) {
       Logger.logError('Chat 清空记录出错: $e', stackTrace);
+    }
+  }
+
+  void setPrompt(String prompt) {
+    try {
+      this.prompt = OpenAIChatCompletionChoiceMessageModel(
+        role: OpenAIChatMessageRole.system,
+        content: [
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            prompt,
+          ),
+        ],
+      );
+    } catch (e, stackTrace) {
+      Logger.logError('Chat 设置prompt出错: $e', stackTrace);
     }
   }
 
@@ -164,11 +199,41 @@ class Chat {
     }
   }
 
+  List<OpenAIChatCompletionChoiceMessageModel> getLastMsgModel(int count) {
+    try {
+      var startIndex = content.length > count ? content.length - count : 0;
+      var lastMsgs = content.sublist(startIndex);
+      var res = [prompt];
+      res.addAll(lastMsgs);
+      return res;
+      // return lastMsgs;
+    } catch (e, stackTrace) {
+      Logger.logError('Chat 获取最近消息出错: $e', stackTrace);
+      return [prompt];
+    }
+  }
+
+  void showAllRecords(){
+    try {
+      Logger.log('===========================所有聊天记录=========================');
+      var res = content.map((e) => e.toMap().toString()).toList();
+      for(var r in res){
+        Logger.log(r);
+      }
+    }
+    catch(e, stackTrace){
+      Logger.logError('Chat 显示所有记录出错: $e', stackTrace); 
+    }
+  }
+
   Widget buildWidget(int index) {
     try {
       if (index < content.length && index >= 0) {
         var msg = content[index].content!.first.text!;
         var left = content[index].role == OpenAIChatMessageRole.assistant;
+        if (content[index].role == OpenAIChatMessageRole.system) {
+          return const SizedBox();
+        }
         return _build(mdMsg: msg, left: left);
       }
       return const SizedBox();
@@ -313,19 +378,95 @@ class ChatController with ChangeNotifier {
             }
             return path;
           }).toList();
-          // var imgDiscription = await analyseImg(title, imgPaths);
-          var imgDiscription1 =
+          var imgDiscription =
               json.decode(await analyseImg(title, imgPaths)).toString();
-          var content = await Prompts()
-              .generateStrategy(message, imgDiscription1, shortRecord, '');
-          Logger.log('content: $content');
-          var reply = OpenAIUserInteraction().sendMessage(content['Response']);
-          reply.then((value) => sendMessage(title, value, true));
+
+          var prompt =
+              Prompts().generateStrategyPrompt(imgDiscription, shortRecord, '');
+          String content = '';
+          sendMessage(title, '正在思考中...', true);
+          _chats[title]!.setPrompt(prompt);
+          OpenAIUserInteraction().sendMessageWithStream(
+              '图片解析结果：$imgDiscription, \n用户输入: $message', (event) {
+            final firstCompletionChoice = event.choices.first;
+            content += firstCompletionChoice.delta.content?.first?.text ?? '';
+            _chats[title]!.setLastMsg(extractResponseContent(content));
+            notifyListeners();
+          }, () {
+            Logger.log('llm 回复: $content');
+            updateImgMemory(title, content, imgPaths);
+            _chats[title]!.showAllRecords();
+          }, records: _chats[title]!.getLastMsgModel(20));
         }
+
         notifyListeners();
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController sendMessage 方法出错: $e', stackTrace);
+    }
+  }
+
+  String extractResponseContent(String input) {
+    // 查找 "Response": 的起始位置
+    int startIndex = input.indexOf('"Response": "');
+    if (startIndex == -1) {
+      // 如果没有找到 "Response": "，返回空字符串
+      return '正在思考中...';
+    }
+    // 计算 "Response": 之后的起始位置
+    startIndex += '"Response": "'.length;
+    // 跳过可能存在的空白字符
+    while (startIndex < input.length && input[startIndex] == ' ') {
+      startIndex++;
+    }
+    // 查找下一个 " 的位置
+    int endIndex = input.indexOf('",', startIndex);
+    if (endIndex == -1) {
+      // 如果没有找到 "，返回 "Response": 后面的所有内容
+      return input.substring(startIndex).trim();
+    }
+    // 返回 " 前面的内容
+    return input.substring(startIndex, endIndex).trim();
+  }
+
+  void updateImgMemory(String title, String msg, List<String> imgPaths) {
+    try {
+      var resMap = json.decode(msg) as Map<String, dynamic>;
+      if (resMap.containsKey('updated_image')) {
+        List<dynamic> updatedImgList = resMap['updated_image'];
+        List<String> updatedImg =
+            updatedImgList.map((e) => e.toString()).toList();
+        Logger.log('updateImg: $updatedImg');
+        // 确保 updatedImg 的长度和 imgPaths 的长度一致
+        if (updatedImg.length == imgPaths.length) {
+          for (int i = 0; i < imgPaths.length; i++) {
+            String imgPath = imgPaths[i];
+            String jsonPath = imgPath.replaceAll(RegExp(r'\.\w+$'), '.json');
+
+            // 创建 File 对象
+            File jsonFile = File(jsonPath);
+
+            // 读取原文件内容
+            Map<String, dynamic> jsonData = {};
+            if (jsonFile.existsSync()) {
+              String jsonString = jsonFile.readAsStringSync();
+              jsonData = json.decode(jsonString) as Map<String, dynamic>;
+            }
+
+            // 添加新的键值对
+            jsonData['更新描述'] = updatedImg[i];
+
+            // 将更新后的内容写入 JSON 文件
+            jsonFile.writeAsStringSync(json.encode(jsonData));
+          }
+        } else {
+          Logger.logError(
+              'ChatController updateImgMemory 方法出错: updatedImg 和 imgPaths 的长度不一致',
+              null);
+        }
+      }
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController updateImgMemory 方法出错: $e', stackTrace);
     }
   }
 
@@ -351,8 +492,9 @@ class ChatController with ChangeNotifier {
       _imgRecords['$title-imgs'] = ImgRecord(title: '$title-imgs');
       // sendMessage(title, '你好，我是你的智能助理~', true);
       notifyListeners();
-      var str = Guidance().generate_guidance_message();
-      str.then((value) => sendMessage(title, value, true));
+      sendMessage(title, "正在思考中...", true);
+      var str = Guidance().generateGuidanceMessage();
+      str.then((value) => _chats[title]!.setLastMsg(value));
     } catch (e, stackTrace) {
       Logger.logError('ChatController createChat 方法出错: $e', stackTrace);
     }
@@ -393,6 +535,45 @@ class ChatController with ChangeNotifier {
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController deleteChatRecord 方法出错: $e', stackTrace);
+    }
+  }
+
+  Future<void> summarize(String title) async {
+    try {
+      if (_chats.containsKey(title)) {
+        notifyListeners();
+        Logger.log('选择图片：$selectedImgs');
+        var imgPaths = selectedImgs.map((e) {
+          String path = '';
+          if (e >= 0) {
+            path = _imgRecords['$title-imgs']!.imgMDText.split('\n')[e - 1];
+          }
+          return path;
+        }).toList();
+        var imgDiscription =
+            json.decode(await analyseImg(title, imgPaths)).toString();
+
+        var prompt =
+            Prompts().getPrompt("summary_prompt");
+        String content = '';
+        sendMessage(title, '正在总结中...', true);
+        _chats[title]!.setPrompt(prompt);
+        OpenAIUserInteraction().sendMessageWithStream(
+            '图片解析结果：$imgDiscription', (event) {
+          final firstCompletionChoice = event.choices.first;
+          content += firstCompletionChoice.delta.content?.first?.text ?? '';
+          _chats[title]!.setLastMsg(content);
+          notifyListeners();
+        }, () {
+          Logger.log('llm 总结: $content');
+        }, records: _chats[title]!.getLastMsgModel(20));
+
+        notifyListeners();
+        
+        _chats[title]!.showAllRecords();
+      }
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController summarize 方法出错: $e', stackTrace);
     }
   }
 

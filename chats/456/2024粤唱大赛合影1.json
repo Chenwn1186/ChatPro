@@ -1,0 +1,1 @@
+{"result":"调用 OpenAI API 时出错: Error code: 400 - {'error': {'message': 'Total tokens of image and text exceed max message tokens. Request id: 021741170560450cf82fe52d8751490d9dffec9ba0f1644aca68e', 'type': 'invalid_request_error', 'param': None, 'code': None}}","更新描述":""}

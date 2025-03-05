@@ -22,6 +22,7 @@ class ChatList extends StatelessWidget {
                 child: ListTile(
                   title: Text(title),
                   onTap: () {
+                    ChatController().selectedImgs = [];
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => ChatPage(
                         chatRecord: ChatController().getChat(title),

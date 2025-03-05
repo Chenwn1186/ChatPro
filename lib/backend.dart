@@ -75,14 +75,46 @@ class OpenAIUserInteraction {
       return response.toString();
     } catch (e, stackTrace) {
       Logger.logError('发送消息到 OpenAI 时出错: $e', stackTrace);
-      return 'An error occurred while getting a response.';
+      return '发送消息到 OpenAI 时出错: $e';
+    }
+  }
+
+  Future<void> sendMessageWithStream(
+      String message,
+      void Function(OpenAIStreamChatCompletionModel)? onData,
+      void Function()? onDone,
+      {List<OpenAIChatCompletionChoiceMessageModel>? records}) async {
+    try {
+      Logger.log('开始发送消息到 OpenAI: $message');
+      // 创建一个聊天完成请求
+      var content = [
+        OpenAIChatCompletionChoiceMessageContentItemModel.text(
+          message,
+        ),
+      ];
+      var msg = OpenAIChatCompletionChoiceMessageModel(role: OpenAIChatMessageRole.user, content: content);
+      records ??= [];
+      records.add(msg);
+      var chatCompletion = OpenAI.instance.chat.createStream(
+        model: "gpt-4o",
+        messages: records,
+        // maxTokens: 600,
+      );
+      chatCompletion.listen(onData, onDone: onDone);
+      Logger.log('===========================聊天记录=========================');
+      for(var i in records){
+        
+        Logger.log('${i.role}: ${i.content}');
+      }
+    } catch (e, stackTrace) {
+      Logger.logError('发送消息到 OpenAI with stream时出错: $e', stackTrace);
     }
   }
 }
 
 class Guidance {
   // 静态常量，存储用于引导回忆的提示语列表
-  static final List<String> recall_cues = [
+  static final List<String> recallCues = [
     "某个特定的季节或节日，例如 '你还记得去年冬天的一个特别时刻吗？'",
     "某个特定的地点，例如 '你有没有在一次难忘的旅行中拍的照片？'",
     "某个重要的人或物品，例如 '你有没有收到过一份特别的礼物或卡片？'",
@@ -91,36 +123,38 @@ class Guidance {
     "一个特别的事件，例如 '你有没有参加过一次难忘的聚会或活动？'",
     "任何与用户相关的独特经历，例如 '有没有一张照片让你想起某个特定的场景？'"
   ];
+
   /// 异步方法，用于生成引导用户回忆的消息
   /// 返回一个 Future，该 Future 完成时将返回生成的引导消息
-  Future<String> generate_guidance_message() async {
+  Future<String> generateGuidanceMessage() async {
     try {
       // 记录开始生成引导消息的日志
       Logger.log('开始生成引导消息');
       // 创建一个随机数生成器实例
       final random = Random();
       // 从 recall_cues 列表中随机选择一个回忆线索
-      final selectedCue = recall_cues[random.nextInt(recall_cues.length)];
-  // 从 Prompts 单例中获取引导提示语
-  var guidancePrompt = Prompts().getPrompt('guidance_prompt_CN');
-  // 构造发送给 GPT - 4o 模型的提示，包含引导提示和选中的回忆线索
-  final prompt = "$guidancePrompt\n\n当前选择的回忆线索是：$selectedCue";
-  // 记录生成的提示的日志
-  Logger.log('生成的提示: $prompt');
-  // 调用 OpenAIUserInteraction 单例的 sendMessage 方法，使用 GPT - 4o 模型生成引导消息
-  final result = await OpenAIUserInteraction().sendMessage(prompt);
-  // 记录生成的引导消息的日志
-  Logger.log('生成的引导消息: $result');
-  // 返回生成的引导消息
-  return result;
-  } catch (e, stackTrace) {
-  // 记录生成引导消息时出错的日志
-  Logger.logError('生成引导消息时出错: $e', stackTrace);
-  // 返回错误信息
-  return '生成引导消息时发生错误。';
-  }
+      final selectedCue = recallCues[random.nextInt(recallCues.length)];
+      // 从 Prompts 单例中获取引导提示语
+      var guidancePrompt = Prompts().getPrompt('guidance_prompt_CN');
+      // 构造发送给 GPT - 4o 模型的提示，包含引导提示和选中的回忆线索
+      final prompt = "$guidancePrompt\n\n当前选择的回忆线索是：$selectedCue";
+      // 记录生成的提示的日志
+      Logger.log('生成的提示: $prompt');
+      // 调用 OpenAIUserInteraction 单例的 sendMessage 方法，使用 GPT - 4o 模型生成引导消息
+      final result = await OpenAIUserInteraction().sendMessage(prompt);
+      // 记录生成的引导消息的日志
+      Logger.log('生成的引导消息: $result');
+      // 返回生成的引导消息
+      return result;
+    } catch (e, stackTrace) {
+      // 记录生成引导消息时出错的日志
+      Logger.logError('生成引导消息时出错: $e', stackTrace);
+      // 返回错误信息
+      return '生成引导消息时发生错误。';
+    }
   }
 }
+
 class Prompts {
   // 静态私有实例，用于存储单例
   static final Prompts _instance = Prompts._internal();
@@ -179,8 +213,9 @@ class Prompts {
       strategy = strategy.replaceAll(RegExp(r'```json|```'), '').trim();
       var strategyMap = jsonDecode(strategy) as Map<String, dynamic>;
       Logger.log('解析后的策略: $strategyMap');
-      if(strategyMap.containsKey('updated_image')){
-        strategyMap['updated_image'] = List<String>.from(strategyMap['updated_image']);
+      if (strategyMap.containsKey('updated_image')) {
+        strategyMap['updated_image'] =
+            List<String>.from(strategyMap['updated_image']);
       }
       return strategyMap;
     } catch (e, stackTrace) {
@@ -189,6 +224,21 @@ class Prompts {
     }
   }
 
+  String generateStrategyPrompt(String imgDiscription,
+      String shortRecord, String longRecord) {
+    try {
+      Logger.log('开始生成策略');
+      var prompt = getPrompt('psychological_companion_reply');
+//       var content = '''
+// 长期记忆（过去相关回忆）：$longRecord
+// 选中图片记忆：${imgDiscription.toString()}''';
+      return prompt;
+      // return prompt + content;
+    } catch (e, stackTrace) {
+      Logger.logError('生成策略时出错: $e', stackTrace);
+      return '生成策略时出错: $e';
+    }
+  }
 }
 
 //todo 图片解析, 分对话建立索引：图片哈希值-解析结果
@@ -198,14 +248,18 @@ Future<String> analyseImg(String title, List<String> path) async {
   }
   List<String> usedPaths = [];
   List<String> results = [];
+  List<Future<String>> futureResults = [];
   // 检查是否有对应的解析后文件
   for (String imagePath in path) {
     String resultFilePath = "${imagePath.split('.').first}.json";
     File resultFile = File(resultFilePath);
     if (resultFile.existsSync()) {
-      Logger.log('找到已解析的文件，直接返回结果: $resultFilePath');
-      results.add(resultFile.readAsStringSync(encoding: Encoding.getByName('utf-8')!));
+      var res =
+          resultFile.readAsStringSync(encoding: Encoding.getByName('utf-8')!);
+      // res = json.decode(res).toString();
+      results.add(res);
       usedPaths.add(imagePath);
+      Logger.log('找到已解析的文件，直接返回结果');
     }
   }
   path.removeWhere((element) => usedPaths.contains(element));
@@ -214,43 +268,11 @@ Future<String> analyseImg(String title, List<String> path) async {
   }
   try {
     Logger.log('开始分析图片，标题: $title, 图片路径: $path');
-    // path: 图片路径的列表
-    // 遍历每张图片
-
     for (String imagePath in path) {
-      // 读取图片并转换为 base64
-      Logger.log('path: $imagePath');
-      File imageFile = File(imagePath);
-      if (!imageFile.existsSync()) {
-        Logger.logError('图片文件不存在: $imagePath');
-        continue;
-      }
-      // List<int> imageBytes = imageFile.readAsBytesSync();
-      // 直接上传图片
-      var request = http.MultipartRequest('POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
-      // 添加图片文件
-      var stream = http.ByteStream(imageFile.openRead());
-      var length = await imageFile.length();
-      var multipartFile = http.MultipartFile('image', stream, length, filename: imageFile.path.split('/').last);
-      request.files.add(multipartFile);
-
-      // 发送请求
-      var streamResponse = await request.send();
-      var responseBody = await streamResponse.stream.bytesToString();
-      var response = http.Response(responseBody, streamResponse.statusCode);
-      // 检查响应状态码
-      if (response.statusCode == 200) {
-        // 打印结果
-        Logger.log(response.body);
-        // 保存结果到文件
-        String resultFilePath = "${imagePath.split('.').first}.json";
-        File resultFile = File(resultFilePath);
-        resultFile.writeAsStringSync(response.body,
-            mode: FileMode.write,
-            encoding: Encoding.getByName('utf-8')!); // 以 UTF-8 编码写入文件
-        results.add(response.body);
-      }
+      futureResults.add(analyseImgOnline(imagePath));
     }
+    var fRes = await Future.wait(futureResults);
+    results.addAll(fRes);
     return results.toString();
   } catch (e, stackTrace) {
     Logger.logError('分析图片时出错: $e', stackTrace);
@@ -258,4 +280,38 @@ Future<String> analyseImg(String title, List<String> path) async {
   }
 }
 
-void updateImgAnalysis(String title) {}
+Future<String> analyseImgOnline(String imagePath) async {
+  Logger.log('path: $imagePath');
+  File imageFile = File(imagePath);
+  if (!imageFile.existsSync()) {
+    Logger.logError('图片文件不存在: $imagePath');
+    return '';
+  }
+  var request = http.MultipartRequest(
+      'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
+  // 添加图片文件
+  var stream = http.ByteStream(imageFile.openRead());
+  var length = await imageFile.length();
+  var multipartFile = http.MultipartFile('image', stream, length,
+      filename: imageFile.path.split('/').last);
+  request.files.add(multipartFile);
+
+  // 发送请求
+  var streamResponse = await request.send();
+  var responseBody = await streamResponse.stream.bytesToString();
+  var response = http.Response(responseBody, streamResponse.statusCode);
+  if (response.statusCode == 200) {
+    // 打印结果
+    Logger.log('解析图片结果:${response.body}');
+    // 保存结果到文件
+    String resultFilePath = "${imagePath.split('.').first}.json";
+    File resultFile = File(resultFilePath);
+    resultFile.writeAsStringSync(response.body,
+        mode: FileMode.write,
+        encoding: Encoding.getByName('utf-8')!); // 以 UTF-8 编码写入文件
+    return response.body;
+  }
+  Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
+  return response.body;
+}
+

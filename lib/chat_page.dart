@@ -212,8 +212,12 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
               ),
             ),
+            IconButton(onPressed: () {
+              ChatController().summarize(widget.title);
+            }, icon: const Icon(Icons.done_all_outlined), tooltip: "总结",),
             IconButton(
               icon: const Icon(Icons.photo),
+              tooltip: "上传图片",
               onPressed: () async {
                 // 处理上传图片的逻辑
                 List<String>? filePaths = await FileUtils.pickFile(context);
@@ -246,6 +250,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
             ),
             IconButton(
               icon: const Icon(Icons.send),
+              tooltip: "发送",
               onPressed: () {
                 if (_textEditingController.text.isNotEmpty) {
                   // 处理发送消息的逻辑
