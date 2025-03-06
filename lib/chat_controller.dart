@@ -112,16 +112,12 @@ class Chat {
       Logger.logError('Chat 从路径创建实例出错: $e', stackTrace);
     }
   }
-  void setLastMsg(String lastMsg) {
+  void setLastMsg(String msg) {
     try {
       if (content.isNotEmpty) {
-        content.last = OpenAIChatCompletionChoiceMessageModel(
-          role: OpenAIChatMessageRole.assistant,
-          content: [
+        content.last.content![0] =
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
-              lastMsg,
-            ),
-          ],
+          msg,
         );
         saveRecord();
       }
@@ -160,6 +156,12 @@ class Chat {
           OpenAIChatCompletionChoiceMessageContentItemModel.text(
             prompt,
           ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            '',
+          ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            '',
+          ),
         ],
       );
     } catch (e, stackTrace) {
@@ -171,15 +173,15 @@ class Chat {
     try {
       if (content.isNotEmpty) {
         var lastMsg = content.last;
-        lastMsg.content!.add(OpenAIChatCompletionChoiceMessageContentItemModel.text(
+        lastMsg.content![1] =
+            OpenAIChatCompletionChoiceMessageContentItemModel.text(
           recommendations,
-        ));
+        );
         content[content.length - 1] = lastMsg;
         saveRecord();
-      } 
-    } 
-    catch (e, stackTrace) {
-      Logger.logError('Chat 设置推荐出错: $e', stackTrace); 
+      }
+    } catch (e, stackTrace) {
+      Logger.logError('Chat 设置推荐出错: $e', stackTrace);
     }
   }
 
@@ -190,6 +192,12 @@ class Chat {
         content: [
           OpenAIChatCompletionChoiceMessageContentItemModel.text(
             text,
+          ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            '',
+          ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            '',
           ),
         ],
       ));
@@ -246,18 +254,25 @@ class Chat {
       if (index < content.length && index >= 0) {
         var msg = content[index].content!.first.text!;
         var left = content[index].role == OpenAIChatMessageRole.assistant;
+        var thumbUp = content[index].content![2].text!;
         if (content[index].role == OpenAIChatMessageRole.system) {
           return const SizedBox();
         }
-        if(content[index].content!.length > 1){
-          var rcm = content[index].content!.last.text!;
+        if (content[index].content![1].text!.isNotEmpty) {
+          var rcm = content[index].content![1].text!;
           var rcmList = json.decode(rcm) as List<dynamic>;
-          if(rcmList.isNotEmpty){
+          if (rcmList.isNotEmpty) {
             var rcmList2 = rcmList.map((e) => e as String).toList();
-            return _build(mdMsg: msg, left: left, recommendations: rcmList2);
+
+            return _build(
+                mdMsg: msg,
+                left: left,
+                recommendations: rcmList2,
+                index: index,
+                thumbUp: thumbUp);
           }
         }
-        return _build(mdMsg: msg, left: left);
+        return _build(mdMsg: msg, left: left, index: index, thumbUp: thumbUp);
       }
       return const SizedBox();
     } catch (e, stackTrace) {
@@ -266,7 +281,21 @@ class Chat {
     }
   }
 
-  static Widget _build({required String mdMsg, required bool left, List<String> recommendations = const []}) {
+  void setThumbUp(int index, String thumbUp) {
+    try {
+      var msg = content[index];
+      msg.content![2] = OpenAIChatCompletionChoiceMessageContentItemModel.text(thumbUp);
+      saveRecord();
+    } catch (e, stackTrace) {
+      Logger.logError('Chat 点赞出错: $e', stackTrace);
+    }
+  }
+
+  static Widget _build(
+      {required String mdMsg,
+      required bool left,
+      List<String> recommendations = const [],
+      required int index,required String thumbUp}) {
     try {
       if (left) {
         return ChatPageMsg(
@@ -278,6 +307,8 @@ class Chat {
           bgColor: const Color.fromARGB(205, 224, 222, 255),
           textColor: const Color.fromARGB(255, 71, 48, 87),
           recommendations: recommendations,
+          index: index,
+          thumbUp: thumbUp,
         );
       } else {
         return ChatPageMsg(
@@ -289,6 +320,8 @@ class Chat {
           bgColor: const Color.fromARGB(205, 214, 233, 248),
           textColor: const Color.fromARGB(255, 16, 112, 186),
           recommendations: recommendations,
+          index: index,
+          thumbUp: thumbUp,
         );
       }
     } catch (e, stackTrace) {
@@ -329,6 +362,7 @@ class ChatController with ChangeNotifier {
   // 存储所有对话标题
   // List<String> get chatTitles => _chatRecords.keys.toList();
   List<String> get chatTitles => _chats.keys.toList();
+  String currentTitle = '';
 
   Chat getChat(String title) {
     try {
@@ -407,10 +441,9 @@ class ChatController with ChangeNotifier {
           var imgDiscription =
               json.decode(await analyseImg(title, imgPaths)).toString();
 
-          var prompt =
-              Prompts().getPrompt('psychological_companion_reply');
+          var prompt = Prompts().getPrompt('psychological_companion_reply');
           String content = '';
-          
+
           _chats[title]!.setPrompt(prompt);
           await OpenAIUserInteraction().sendMessageWithStream(
               '图片解析结果：$imgDiscription, \n用户输入: $message', (event) {
@@ -475,7 +508,7 @@ class ChatController with ChangeNotifier {
         if (updatedImg.length == imgPaths.length) {
           for (int i = 0; i < imgPaths.length; i++) {
             String imgPath = imgPaths[i];
-            if(updatedImg[i].isEmpty) continue;
+            if (updatedImg[i].isEmpty) continue;
             String jsonPath = imgPath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
 
             // 创建 File 对象
@@ -612,6 +645,17 @@ class ChatController with ChangeNotifier {
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController summarize 方法出错: $e', stackTrace);
+    }
+  }
+
+  void setThumbUp(int index, String thumbUp) {
+    try {
+      if (_chats.containsKey(currentTitle)) {
+        _chats[currentTitle]!.setThumbUp(index, thumbUp);
+        notifyListeners();
+      }
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController setThumbUp 方法出错: $e', stackTrace);
     }
   }
 

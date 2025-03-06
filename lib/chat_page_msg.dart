@@ -1,3 +1,4 @@
+import 'package:chat_pro/chat_controller.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -11,7 +12,9 @@ class ChatPageMsg extends StatelessWidget {
       required this.headTextColor,
       required this.bgColor,
       required this.textColor,
-      required this.recommendations});
+      required this.recommendations,
+      required this.index,
+      this.thumbUp = ''});
 
   ///markdown message
   final String mdMsg;
@@ -22,6 +25,8 @@ class ChatPageMsg extends StatelessWidget {
   final Color bgColor;
   final Color textColor;
   final List<String> recommendations;
+  final int index;
+  final String thumbUp;
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -68,8 +73,8 @@ class ChatPageMsg extends StatelessWidget {
                 Column(
                   children: recommendations
                       .map((e) => Padding(
-                        padding: const EdgeInsets.only(left: 10),
-                        child: Align(
+                            padding: const EdgeInsets.only(left: 10),
+                            child: Align(
                               alignment: Alignment.topLeft,
                               child: Card(
                                 elevation: 0,
@@ -85,8 +90,49 @@ class ChatPageMsg extends StatelessWidget {
                                     child: Text(e)),
                               ),
                             ),
-                      ))
+                          ))
                       .toList(),
+                ),
+                Row(
+                  children: [
+                    const SizedBox(
+                      width: 4,
+                    ),
+                    if (left)
+                      IconButton(
+                          onPressed: () {
+                            if(thumbUp != 'up') {
+                              ChatController().setThumbUp(index, 'up');
+                            }
+                            else {
+                              ChatController().setThumbUp(index, ''); 
+                            }
+                          },
+                          icon: Icon(
+                            thumbUp == 'up'
+                                ? Icons.thumb_up_alt
+                                : Icons.thumb_up_alt_outlined,
+                            color: const Color.fromARGB(255, 56, 56, 56),
+                            size: 20,
+                          )),
+                    if (left)
+                      IconButton(
+                          onPressed: () {
+                            if(thumbUp!= 'down') {
+                              ChatController().setThumbUp(index, 'down');
+                            }
+                            else {
+                              ChatController().setThumbUp(index, ''); 
+                            }
+                          },
+                          icon: Icon(
+                            thumbUp == 'down'
+                                ? Icons.thumb_down_alt
+                                : Icons.thumb_down_alt_outlined,
+                            color: const Color.fromARGB(255, 56, 56, 56),
+                            size: 20,
+                          )),
+                  ],
                 )
               ],
             ),
