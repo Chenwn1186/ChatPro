@@ -56,7 +56,7 @@ class OpenAIUserInteraction {
   /// 返回 OpenAI 的回复
   Future<String> sendMessage(String message) async {
     try {
-      Logger.log('开始发送消息到 OpenAI: $message');
+      // Logger.log('开始发送消息到 OpenAI: $message');
       // 创建一个聊天完成请求
       final chatCompletion = await OpenAI.instance.chat.create(
         model: model,
@@ -133,7 +133,7 @@ class Guidance {
   Future<String> generateGuidanceMessage() async {
     try {
       // 记录开始生成引导消息的日志
-      Logger.log('开始生成引导消息');
+      // Logger.log('开始生成引导消息');
       // 创建一个随机数生成器实例
       final random = Random();
       // 从 recall_cues 列表中随机选择一个回忆线索
@@ -143,11 +143,11 @@ class Guidance {
       // 构造发送给 GPT - 4o 模型的提示，包含引导提示和选中的回忆线索
       final prompt = "$guidancePrompt\n\n当前选择的回忆线索是：$selectedCue";
       // 记录生成的提示的日志
-      Logger.log('生成的提示: $prompt');
+      // Logger.log('生成的提示: $prompt');
       // 调用 OpenAIUserInteraction 单例的 sendMessage 方法，使用 GPT - 4o 模型生成引导消息
       final result = await OpenAIUserInteraction().sendMessage(prompt);
       // 记录生成的引导消息的日志
-      Logger.log('生成的引导消息: $result');
+      // Logger.log('生成的引导消息: $result');
       // 返回生成的引导消息
       return result;
     } catch (e, stackTrace) {

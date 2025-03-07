@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:chat_pro/chat_page_msg.dart';
 import 'package:chat_pro/embeddings.dart';
+import 'package:chat_pro/ui/theme.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/material.dart';
 import 'backend.dart';
@@ -50,10 +51,9 @@ class ImgRecord {
 
   factory ImgRecord.fromPath(String path) {
     final File file = File(path);
-    final fileName = path.replaceAll('.json', '').split('/').last;
+    final fileName = file.uri.pathSegments.last.split('.').first;
     try {
       if (file.existsSync()) {
-        // var imgMDText = file.readAsStringSync();
         var imgsJson = json.decode(file.readAsStringSync()) as List<dynamic>;
         var imgs = imgsJson.map((e) => e.toString()).toList();
         return ImgRecord(title: fileName, imgs: imgs);
@@ -342,10 +342,10 @@ class Chat {
           left: left,
           mdMsg: mdMsg,
           imgText: '小助手',
-          headBGColor: const Color.fromARGB(255, 166, 51, 243),
-          headTextColor: Colors.white,
-          bgColor: const Color.fromARGB(205, 224, 222, 255),
-          textColor: const Color.fromARGB(255, 71, 48, 87),
+          headBGColor: ChatThemes().getColors()[0],
+          headTextColor: ChatThemes().getColors()[1],
+          bgColor: ChatThemes().getColors()[2],
+          textColor: ChatThemes().getColors()[3],
           recommendations: recommendations,
           index: index,
           thumbUp: thumbUp,
@@ -356,10 +356,10 @@ class Chat {
           left: left,
           mdMsg: mdMsg,
           imgText: '用户',
-          headBGColor: const Color.fromARGB(255, 6, 94, 166),
-          headTextColor: Colors.white,
-          bgColor: const Color.fromARGB(205, 214, 233, 248),
-          textColor: const Color.fromARGB(255, 16, 112, 186),
+          headBGColor: ChatThemes().getColors()[4],
+          headTextColor: ChatThemes().getColors()[5],
+          bgColor: ChatThemes().getColors()[6],
+          textColor: ChatThemes().getColors()[7],
           recommendations: recommendations,
           index: index,
           thumbUp: thumbUp,
@@ -405,6 +405,7 @@ class ChatController with ChangeNotifier {
   // List<String> get chatTitles => _chatRecords.keys.toList();
   List<String> get chatTitles => _chats.keys.toList();
   String currentTitle = '';
+  String lastInput = '';
 
   ScrollController chatListScrollController = ScrollController();
 
@@ -487,17 +488,22 @@ class ChatController with ChangeNotifier {
             }
             return path;
           }).toList();
+          Logger.log('用户输入：$message');
           Logger.log('用户选择的图片：$imgPaths');
-          sendMessage(title, '正在思考中...', true);
+          sendMessage(title, '正在解析图片中...', true);
           var imgDiscription =
               json.decode(await analyseImg(title, imgPaths)).toString();
-
+          var imgDiscriptionRes = '图片解析结果：$imgDiscription';
+          if (imgDiscription.isEmpty) {
+            imgDiscriptionRes = '';
+          }
           var prompt = Prompts().getPrompt('psychological_companion_reply');
           String content = '';
 
           _chats[title]!.setPrompt(prompt);
+          _chats[title]!.setLastMsg('正在思考中...');
           await OpenAIUserInteraction().sendMessageWithStream(
-              '图片解析结果：$imgDiscription, \n用户输入: $message', (event) {
+              '$imgDiscriptionRes, \n用户输入: $message', (event) {
             final firstCompletionChoice = event.choices.first;
             content += firstCompletionChoice.delta.content?.first?.text ?? '';
             _chats[title]!.setLastMsg(extractResponseContent(content));
@@ -505,9 +511,26 @@ class ChatController with ChangeNotifier {
           }, () {
             Logger.log('llm 回复: $content');
             content = content.replaceAll('```json', '').replaceAll('```', '');
-            updateImgMemory(title, content, imgPaths);
+
             // _chats[title]!.showAllRecords();
-            var contentMap = json.decode(content) as Map<String, dynamic>;
+            Map<String, dynamic> contentMap = {};
+            try {
+              contentMap = json.decode(content) as Map<String, dynamic>;
+            } catch (e) {
+              Logger.logError('ChatController 解析llm回复 出错: $e');
+              contentMap = {
+                "Adopted Strategy": "无策略",
+                "Response": content,
+                "updated_image": [],
+                "Recommendations": []
+              };
+              _chats[title]!.setLastMsg(content);
+            }
+            List<dynamic> updatedMemorys0 =
+                contentMap['updated_image']! as List<dynamic>;
+            List<String> updatedMemorys =
+                updatedMemorys0.map((e) => e.toString()).toList();
+            updateImgMemory(title, updatedMemorys, imgPaths);
             // print('contentMap: $contentMap');
             var rcmStr = List<String>.from(contentMap['Recommendations']!);
             _chats[title]!.setRecommendations(json.encode(rcmStr));
@@ -533,15 +556,16 @@ class ChatController with ChangeNotifier {
 
   String extractResponseContent(String input) {
     // 查找 "Response": 的起始位置
-    int startIndex = input.indexOf('"Response": "');
+    int startIndex = input.indexOf('"Response":');
     if (startIndex == -1) {
       // 如果没有找到 "Response": "，返回空字符串
       return '正在思考中...';
     }
     // 计算 "Response": 之后的起始位置
-    startIndex += '"Response": "'.length;
+    startIndex += '"Response":'.length;
     // 跳过可能存在的空白字符
-    while (startIndex < input.length && input[startIndex] == ' ') {
+    while (startIndex < input.length &&
+        (input[startIndex] == ' ' || input[startIndex] == '"')) {
       startIndex++;
     }
     // 查找下一个 " 的位置
@@ -554,45 +578,39 @@ class ChatController with ChangeNotifier {
     return input.substring(startIndex, endIndex).trim();
   }
 
-  void updateImgMemory(String title, String msg, List<String> imgPaths) {
+  void updateImgMemory(
+      String title, List<String> memorys, List<String> imgPaths) {
     try {
-      var resMap = json.decode(msg) as Map<String, dynamic>;
-      if (resMap.containsKey('updated_image')) {
-        List<dynamic> updatedImgList = resMap['updated_image'];
-        List<String> updatedImg =
-            updatedImgList.map((e) => e.toString()).toList();
-        Logger.log('updateImg: $updatedImg');
-        Logger.log('imgPaths: $imgPaths');
+      Logger.log('更新记忆: $memorys');
+      Logger.log('需要更新记忆的图片：: $imgPaths');
+      // 确保 updatedImg 的长度和 imgPaths 的长度一致
+      if (memorys.length == imgPaths.length) {
+        for (int i = 0; i < imgPaths.length; i++) {
+          String imgPath = imgPaths[i];
+          if (memorys[i].isEmpty) continue;
+          String jsonPath = imgPath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
 
-        // 确保 updatedImg 的长度和 imgPaths 的长度一致
-        if (updatedImg.length == imgPaths.length) {
-          for (int i = 0; i < imgPaths.length; i++) {
-            String imgPath = imgPaths[i];
-            if (updatedImg[i].isEmpty) continue;
-            String jsonPath = imgPath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
+          // 创建 File 对象
+          File jsonFile = File(jsonPath);
 
-            // 创建 File 对象
-            File jsonFile = File(jsonPath);
-
-            // 读取原文件内容
-            Map<String, dynamic> jsonData = {};
-            if (jsonFile.existsSync()) {
-              String jsonString = jsonFile.readAsStringSync();
-              jsonData = json.decode(jsonString) as Map<String, dynamic>;
-            }
-
-            // 添加新的键值对
-            jsonData['更新描述'] = updatedImg[i];
-            notifyListeners();
-
-            // 将更新后的内容写入 JSON 文件
-            jsonFile.writeAsStringSync(json.encode(jsonData));
+          // 读取原文件内容
+          Map<String, dynamic> jsonData = {};
+          if (jsonFile.existsSync()) {
+            String jsonString = jsonFile.readAsStringSync();
+            jsonData = json.decode(jsonString) as Map<String, dynamic>;
           }
-        } else {
-          Logger.logError(
-              'ChatController updateImgMemory 方法出错: updatedImg 和 imgPaths 的长度不一致',
-              null);
+
+          // 添加新的键值对
+          jsonData['更新描述'] = memorys[i];
+          notifyListeners();
+
+          // 将更新后的内容写入 JSON 文件
+          jsonFile.writeAsStringSync(json.encode(jsonData));
         }
+      } else {
+        Logger.logError(
+            'ChatController updateImgMemory 方法出错: memorys 和 imgPaths 的长度不一致',
+            null);
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController updateImgMemory 方法出错: $e', stackTrace);
@@ -622,7 +640,7 @@ class ChatController with ChangeNotifier {
       // notifyListeners();
       sendPermission = false;
       sendMessage(title, "正在思考中...", true);
-      
+
       var str = Guidance().generateGuidanceMessage();
       str.then((value) {
         _chats[title]!.setLastMsg(value);

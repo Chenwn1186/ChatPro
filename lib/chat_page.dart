@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:chat_pro/chat_controller.dart';
 import 'package:chat_pro/ui/pura_multiple_radial_gradients.dart';
+import 'package:chat_pro/ui/theme.dart';
 import 'package:chat_pro/util/chat_image_data.dart';
 import 'package:chat_pro/util/file_utils.dart';
 import 'package:dart_openai/dart_openai.dart';
@@ -42,7 +43,7 @@ class _ChatPageState extends State<ChatPage> {
         centerTitle: true,
         elevation: 4,
         scrolledUnderElevation: 4,
-        backgroundColor: const Color.fromARGB(255, 139, 211, 253),
+        backgroundColor: const Color.fromARGB(255, 255, 255, 255),
         title: Text(widget.chatRecord.title),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
@@ -50,6 +51,22 @@ class _ChatPageState extends State<ChatPage> {
             Navigator.of(context).pop();
           },
         ),
+        actions: [
+          PopupMenuButton(
+              icon: const Icon(Icons.color_lens),
+              tooltip: '切换主题',
+              itemBuilder: (context) {
+                return ChatThemes().getThemeNames().map((e) {
+                  return PopupMenuItem(
+                    value: e,
+                    child: Text(e),
+                    onTap: () {
+                      ChatThemes().setTheme(e);
+                    },
+                  );
+                }).toList();
+              })
+        ],
       ),
       backgroundColor: Colors.transparent,
       body: Stack(
@@ -128,7 +145,7 @@ class _ChatPageState extends State<ChatPage> {
                               if (imgs[index - 1].isEmpty) {
                                 return const SizedBox();
                               }
-                              if(!File(imgs[index - 1]).existsSync()){
+                              if (!File(imgs[index - 1]).existsSync()) {
                                 Logger.log('图片不存在: ${imgs[index - 1]}');
                                 return const SizedBox();
                               }
@@ -366,13 +383,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 // 处理上传图片的逻辑
                 List<String>? filePaths = await FileUtils.pickFile(context);
                 if (filePaths != null && filePaths.isNotEmpty) {
-                  String chatDir = 'chats/${widget.title}';
+                  String chatDir = '.\\chats\\${widget.title}';
                   await FileUtils.createDirectoryIfNotExists(chatDir);
                   List<String> imgs = [];
                   for (String filePath in filePaths) {
                     String newPath =
                         await FileUtils.copyFileToDirectory(filePath, chatDir);
-                    newPath = newPath.replaceAll('\\', '/');
+                    // newPath = newPath.replaceAll('\\', '/');
                     if (newPath.isNotEmpty) {
                       imgs.add(newPath);
                     }
