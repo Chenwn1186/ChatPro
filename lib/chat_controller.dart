@@ -83,14 +83,14 @@ class ImgRecord {
     }
   }
 
-  void clearRecord() {
-    try {
-      imgs = [];
-      saveRecord();
-    } catch (e, stackTrace) {
-      Logger.logError('ImgRecord 清空记录出错: $e', stackTrace);
-    }
-  }
+  // void clearRecord() {
+  //   try {
+  //     imgs = [];
+  //     saveRecord();
+  //   } catch (e, stackTrace) {
+  //     Logger.logError('ImgRecord 清空记录出错: $e', stackTrace);
+  //   }
+  // }
 }
 
 class Chat {
@@ -141,14 +141,14 @@ class Chat {
     }
   }
 
-  void clearRecord() {
-    try {
-      content = [];
-      saveRecord();
-    } catch (e, stackTrace) {
-      Logger.logError('Chat 清空记录出错: $e', stackTrace);
-    }
-  }
+  // void clearRecord() {
+  //   try {
+  //     content = [];
+  //     saveRecord();
+  //   } catch (e, stackTrace) {
+  //     Logger.logError('Chat 清空记录出错: $e', stackTrace);
+  //   }
+  // }
 
   void setPrompt(String prompt) {
     try {
@@ -419,15 +419,15 @@ class ChatController with ChangeNotifier {
     }
   }
 
-  ImgRecord getImgRecordByTitle(String title) {
-    try {
-      return _imgRecords['$title-imgs']!;
-    } catch (e, stackTrace) {
-      Logger.logError(
-          'ChatController getImgRecordByTitle 方法出错: $e', stackTrace);
-      rethrow;
-    }
-  }
+  // ImgRecord getImgRecordByTitle(String title) {
+  //   try {
+  //     return _imgRecords['$title-imgs']!;
+  //   } catch (e, stackTrace) {
+  //     Logger.logError(
+  //         'ChatController getImgRecordByTitle 方法出错: $e', stackTrace);
+  //     rethrow;
+  //   }
+  // }
 
   List<String> getImgs(String title) {
     try {
@@ -508,7 +508,7 @@ class ChatController with ChangeNotifier {
             updateImgMemory(title, content, imgPaths);
             // _chats[title]!.showAllRecords();
             var contentMap = json.decode(content) as Map<String, dynamic>;
-            print('contentMap: $contentMap');
+            // print('contentMap: $contentMap');
             var rcmStr = List<String>.from(contentMap['Recommendations']!);
             _chats[title]!.setRecommendations(json.encode(rcmStr));
 
@@ -619,11 +619,14 @@ class ChatController with ChangeNotifier {
       _chats[title] = Chat(title: title, content: []);
       _imgRecords['$title-imgs'] = ImgRecord(title: '$title-imgs');
       // sendMessage(title, '你好，我是你的智能助理~', true);
-      notifyListeners();
+      // notifyListeners();
+      sendPermission = false;
       sendMessage(title, "正在思考中...", true);
+      
       var str = Guidance().generateGuidanceMessage();
       str.then((value) {
         _chats[title]!.setLastMsg(value);
+        sendPermission = true;
         notifyListeners();
       });
     } catch (e, stackTrace) {
@@ -632,16 +635,17 @@ class ChatController with ChangeNotifier {
   }
 
   // 清空指定对话的聊天记录
-  void clearChatRecord(String title) {
-    try {
-      if (_chats.containsKey(title)) {
-        _chats[title]!.clearRecord();
-        notifyListeners();
-      }
-    } catch (e, stackTrace) {
-      Logger.logError('ChatController clearChatRecord 方法出错: $e', stackTrace);
-    }
-  }
+  // void clearChatRecord(String title) {
+  //   try {
+  //     if (_chats.containsKey(title)) {
+  //       _chats[title]!.clearRecord();
+  //       _imgRecords['$title-imgs']!.clearRecord();
+  //       notifyListeners();
+  //     }
+  //   } catch (e, stackTrace) {
+  //     Logger.logError('ChatController clearChatRecord 方法出错: $e', stackTrace);
+  //   }
+  // }
 
   // 删除指定对话的聊天记录及对应文件
   Future<void> deleteChatRecord(String title) async {
@@ -659,7 +663,7 @@ class ChatController with ChangeNotifier {
         if (await directory.exists()) {
           await directory.delete(recursive: true);
         }
-        file = File('chats/$title-imgs.txt');
+        file = File('chats/$title-imgs.json');
         if (await file.exists()) {
           await file.delete();
         }
@@ -672,17 +676,7 @@ class ChatController with ChangeNotifier {
   Future<void> summarize(String title) async {
     try {
       if (_chats.containsKey(title)) {
-        // notifyListeners();
-        // Logger.log('选择图片：$selectedImgs');
-        // var imgPaths = selectedImgs.map((e) {
-        //   String path = '';
-        //   if (e >= 0) {
-        //     path = _imgRecords['$title-imgs']!.imgs[e - 1];
-        //   }
-        //   return path;
-        // }).toList();
         var imgDiscription = getImgAnalasis(title);
-        // json.decode(await analyseImg(title, imgPaths)).toString();
 
         var prompt = Prompts().getPrompt("summary_prompt");
         String content = '';

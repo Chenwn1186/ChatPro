@@ -25,7 +25,8 @@ class FileUtils {
     }
   }
 
-  static Future<String> copyFileToDirectory(String filePath, String directoryPath) async {
+  static Future<String> copyFileToDirectory(
+      String filePath, String directoryPath) async {
     File file = File(filePath);
     String fileName = path.basename(file.path);
     String newPath = path.join(directoryPath, fileName);
@@ -46,7 +47,7 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
   late Future<List<FileSystemEntity>> _filesFuture;
   List<String> _drives = [];
   bool _isRoot = true;
-  List<File> _selectedFiles = []; // 用于存储选中的文件
+  final List<File> _selectedFiles = []; // 用于存储选中的文件
 
   @override
   void initState() {
@@ -77,9 +78,9 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
     try {
       if (directoryPath == '\\') {
         entities = await directory
-           .list()
-           .where((entity) => entity is Directory)
-           .toList();
+            .list()
+            .where((entity) => entity is Directory)
+            .toList();
       } else {
         entities = await directory.list().toList();
       }
@@ -106,7 +107,7 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
 
   bool _isImageFile(File file) {
     final ext = path.extension(file.path).toLowerCase();
-    return ['.jpg', '.jpeg', '.png', '.gif'].contains(ext);
+    return ['.jpg', '.jpeg', '.png'].contains(ext);
   }
 
   @override
@@ -157,7 +158,7 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
           children: [
             Expanded(
               child: _isRoot
-                 ? ListView.builder(
+                  ? ListView.builder(
                       itemCount: _drives.length,
                       itemBuilder: (context, index) {
                         return SizedBox(
@@ -184,7 +185,7 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
                               ),
                             ));
                       })
-                 : FutureBuilder<List<FileSystemEntity>>(
+                  : FutureBuilder<List<FileSystemEntity>>(
                       future: _filesFuture,
                       builder: (context, snapshot) {
                         if (snapshot.connectionState ==
@@ -203,9 +204,13 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
                               itemBuilder: (context, index) {
                                 final file = snapshot.data![index];
                                 final fileName = path.basename(file.path);
-                                final isSelected = file is File && _selectedFiles.contains(file);
+                                final isSelected = file is File &&
+                                    _selectedFiles.contains(file);
                                 // 根据文件类型动态调整高度
-                                final itemHeight = file is File && _isImageFile(file) ? 80.0 : 25.0;
+                                final itemHeight =
+                                    file is File && _isImageFile(file)
+                                        ? 80.0
+                                        : 25.0;
                                 return SizedBox(
                                     height: itemHeight,
                                     width: 280,
@@ -213,7 +218,8 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
                                       onTap: () {
                                         if (file is Directory) {
                                           _updatePath(file.path);
-                                        } else if (file is File && _isImageFile(file)) {
+                                        } else if (file is File &&
+                                            _isImageFile(file)) {
                                           setState(() {
                                             if (_selectedFiles.contains(file)) {
                                               _selectedFiles.remove(file);
@@ -224,12 +230,17 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
                                         }
                                       },
                                       child: Container(
-                                        color: isSelected ? const Color.fromARGB(255, 109, 216, 255) : null,
+                                        color: isSelected
+                                            ? const Color.fromARGB(
+                                                255, 109, 216, 255)
+                                            : null,
                                         child: Row(
                                           children: [
                                             if (file is Directory)
-                                              const Icon(Icons.folder) // 文件夹图标使用默认大小
-                                            else if (file is File && _isImageFile(file))
+                                              const Icon(
+                                                  Icons.folder) // 文件夹图标使用默认大小
+                                            else if (file is File &&
+                                                _isImageFile(file))
                                               Image.file(
                                                 file,
                                                 width: 60,
@@ -237,14 +248,16 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
                                                 fit: BoxFit.cover,
                                               )
                                             else
-                                              const Icon(Icons.insert_drive_file), // 非图片文件图标使用默认大小
+                                              const Icon(Icons
+                                                  .insert_drive_file), // 非图片文件图标使用默认大小
                                             const SizedBox(width: 10),
                                             SizedBox(
                                               width: 500,
                                               child: Text(
                                                 fileName,
                                                 style: const TextStyle(
-                                                    overflow: TextOverflow.fade),
+                                                    overflow:
+                                                        TextOverflow.fade),
                                               ),
                                             ),
                                           ],
@@ -263,7 +276,8 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
         TextButton(
           onPressed: () {
             if (_selectedFiles.isNotEmpty) {
-              final filePaths = _selectedFiles.map((file) => file.path).toList();
+              final filePaths =
+                  _selectedFiles.map((file) => file.path).toList();
               Navigator.of(context).pop(filePaths);
             } else {
               ScaffoldMessenger.of(context).showSnackBar(
