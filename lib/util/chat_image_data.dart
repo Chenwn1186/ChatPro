@@ -25,67 +25,61 @@ class ChatImageData {
       // color: Colors.blue,
       padding: const EdgeInsets.only(left: 4),
       alignment: Alignment.center,
-      child: Center(
-        child: SizedBox(
-          width: size.width * 0.25,
-          height: size.width * 0.27,
-          child: Column(
-            children: [
-              const Spacer(),
-              const SizedBox(height: 6),
-              SingleChildScrollView(
-                child: Column(
-                  children: [
-                    ChatImageDataItem(
-                        title: '时间', content: time, width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '地点',
-                        content: location,
-                        width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '场景', content: scene, width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '人物',
-                        content: people.join('，'),
-                        width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '物体',
-                        content: objects.join('，'),
-                        width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '环境',
-                        content: environment,
-                        width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '活动',
-                        content: activitity.join('，'),
-                        width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '情绪',
-                        content: emotion,
-                        width: size.width * 0.20),
-                    ChatImageDataItem(
-                        title: '描述',
-                        content: describe,
-                        width: size.width * 0.20),
-                  ],
-                ),
-              ),
-              Align(
-                alignment: Alignment.centerRight,
-                child: IconButton(
-                    onPressed: () {
-                      var path = ChatController()
-                          .getImgsText(title)
-                          .split('\n')[index];
-                      showEditDialog(context, path);
-                    },
-                    icon: const Icon(Icons.edit)),
-              ),
-              const Spacer(),
-            ],
+      child: Column(
+        children: [
+          // const Spacer(),
+          const SizedBox(height: 6),
+          SingleChildScrollView(
+            child: Column(
+              children: [
+                ChatImageDataItem(
+                    title: '时间', content: time, width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '地点',
+                    content: location,
+                    width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '场景', content: scene, width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '人物',
+                    content: people.join('，'),
+                    width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '物体',
+                    content: objects.join('，'),
+                    width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '环境',
+                    content: environment,
+                    width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '活动',
+                    content: activitity.join('，'),
+                    width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '情绪',
+                    content: emotion,
+                    width: size.width * 0.20),
+                ChatImageDataItem(
+                    title: '描述',
+                    content: describe,
+                    width: size.width * 0.20),
+              ],
+            ),
           ),
-        ),
+          Align(
+            alignment: Alignment.centerRight,
+            child: IconButton(
+                onPressed: () {
+                  var path = ChatController()
+                      .getImgsText(title)
+                      .split('\n')[index];
+                  showEditDialog(context, path);
+                },
+                icon: const Icon(Icons.edit)),
+          ),
+          // const Spacer(),
+        ],
       ),
     );
   }

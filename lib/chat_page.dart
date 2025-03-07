@@ -7,6 +7,7 @@ import 'package:chat_pro/util/file_utils.dart';
 import 'package:dart_openai/dart_openai.dart';
 // import 'package:chat_pro/chat_page_msg.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 // import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
 
@@ -21,11 +22,11 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ChatController().chatListScrollController;
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    // _scrollController.dispose();
     super.dispose();
   }
 
@@ -172,8 +173,12 @@ class _ChatPageState extends State<ChatPage> {
                                                         shape:
                                                             ContinuousRectangleBorder(
                                                       side: BorderSide(
-                                                          width: 3, 
-                                                          color: !ChatController().selectedImgs.contains(index)? Colors.transparent: Colors.blue,
+                                                        width: 3,
+                                                        color: !ChatController()
+                                                                .selectedImgs
+                                                                .contains(index)
+                                                            ? Colors.transparent
+                                                            : Colors.blue,
                                                       ),
                                                       borderRadius:
                                                           BorderRadius.circular(
@@ -187,7 +192,9 @@ class _ChatPageState extends State<ChatPage> {
                                     ),
                                     SizedBox(
                                       width: width * 0.25,
-                                      child: ChatImageData(index-1, title: widget.chatRecord.title).buildWidget(context),
+                                      child: ChatImageData(index - 1,
+                                              title: widget.chatRecord.title)
+                                          .buildWidget(context),
                                     )
                                   ],
                                 ),
@@ -204,13 +211,18 @@ class _ChatPageState extends State<ChatPage> {
               Expanded(
                 child: Column(
                   children: [
-                    Selector<ChatController,
-                        List<OpenAIChatCompletionChoiceMessageModel>>(
+                    Selector<ChatController, int>(
                       // 修改为调用新的方法
-                      selector: (_, myType) =>
-                          myType.getChat(widget.chatRecord.title).content,
-                      shouldRebuild: (previous, next) => true,
-                      builder: (context, messages, child) {
+                      selector: (_, myType) => myType
+                          .getChat(widget.chatRecord.title)
+                          .content
+                          .length,
+                      // shouldRebuild: (previous, next) => true,
+                      shouldRebuild: (previous, next) {
+                        // print('previous: $previous, next: $next');
+                        return previous != next;
+                      },
+                      builder: (context, messagesLength, child) {
                         // 当消息列表更新时，滚动到最底部
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           if (_scrollController.hasClients) {
@@ -221,9 +233,18 @@ class _ChatPageState extends State<ChatPage> {
                         return Expanded(
                           child: ListView.builder(
                             controller: _scrollController,
-                            itemCount: messages.length,
+                            itemCount: messagesLength,
                             itemBuilder: (BuildContext context, int index) {
-                              return widget.chatRecord.buildWidget(index);
+                              return Selector<ChatController,
+                                  List<OpenAIChatCompletionChoiceMessageModel>>(
+                                selector: (_, chatController) => chatController
+                                    .getChat(widget.chatRecord.title)
+                                    .content,
+                                shouldRebuild: (previous, next) => true,
+                                builder: (context, content, child) {
+                                  return widget.chatRecord.buildWidget(index);
+                                },
+                              );
                             },
                           ),
                         );
@@ -285,18 +306,37 @@ class _ChatInputFieldState extends State<ChatInputField> {
                   maxHeight: 120, // 设置输入框的最大高度
                 ),
                 child: SingleChildScrollView(
-                  child: TextField(
-                    controller: _textEditingController,
-                    focusNode: _focusNode,
-                    decoration: const InputDecoration(
-                      hintText: '输入消息...',
-                      border: InputBorder.none,
+                  child: CallbackShortcuts(
+                    bindings: {
+                      const SingleActivator(LogicalKeyboardKey.enter,
+                          control: false): () {
+                        ChatController().sendMessage(
+                              widget.title, _textEditingController.text, false);
+                          
+                          // 发送消息后重新请求焦点
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _focusNode.requestFocus();
+                            _textEditingController.clear();
+                          });
+                      },
+                      const SingleActivator(LogicalKeyboardKey.enter,
+                          control: true): () {
+                        _textEditingController.text += '\n';
+                      },
+                    },
+                    child: TextField(
+                      controller: _textEditingController,
+                      focusNode: _focusNode,
+                      decoration: const InputDecoration(
+                        hintText: '输入消息...',
+                        border: InputBorder.none,
+                      ),
+                      maxLines: null,
+                      enableInteractiveSelection: true,
+                      enableIMEPersonalizedLearning: true,
+                      keyboardType: TextInputType.multiline,
+                      textInputAction: TextInputAction.newline,
                     ),
-                    maxLines: null,
-                    enableInteractiveSelection: true,
-                    enableIMEPersonalizedLearning: true,
-                    keyboardType: TextInputType.multiline,
-                    textInputAction: TextInputAction.newline,
                   ),
                 ),
               ),
@@ -324,15 +364,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                     newPath = newPath.replaceAll('\\', '/');
 
                     if (newPath.isNotEmpty) {
-                      // String relativePath = newPath.split('chats/').last;
                       imgMDText += '$newPath\n';
-                      // setState(() {
-                      //   _textEditingController.text += '\n$markdown';
-                      //   _textEditingController.selection = TextSelection.fromPosition(
-                      //     TextPosition(offset: _textEditingController.text.length),
-                      //   );
-                      // }
-                      // );
                     }
                   }
 
@@ -348,8 +380,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
                   // 处理发送消息的逻辑
                   ChatController().sendMessage(
                       widget.title, _textEditingController.text, false);
-                  // print('发送消息: ${_textEditingController.text}');
-                  //todo: 发送信息到服务器
                   _textEditingController.clear();
                   // 发送消息后重新请求焦点
                   WidgetsBinding.instance.addPostFrameCallback((_) {

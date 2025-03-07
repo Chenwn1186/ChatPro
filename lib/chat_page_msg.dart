@@ -1,4 +1,5 @@
 import 'package:chat_pro/chat_controller.dart';
+import 'package:chat_pro/ui/animations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -14,7 +15,8 @@ class ChatPageMsg extends StatelessWidget {
       required this.textColor,
       required this.recommendations,
       required this.index,
-      this.thumbUp = ''});
+      this.thumbUp = '',
+      this.showRecommendations = true});
 
   ///markdown message
   final String mdMsg;
@@ -27,126 +29,152 @@ class ChatPageMsg extends StatelessWidget {
   final List<String> recommendations;
   final int index;
   final String thumbUp;
+  final bool showRecommendations;
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (left)
-          HeadImg(
-            imgText: imgText,
-            bgColor: headBGColor,
-            textColor: headTextColor,
-          ),
-        if (!left) const SizedBox(width: 58),
-        const SizedBox(width: 3),
-        Expanded(
-          child: Card(
-            elevation: 0,
-            shape: ContinuousRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
+    return FadeInParent(
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (left)
+            HeadImg(
+              imgText: imgText,
+              bgColor: headBGColor,
+              textColor: headTextColor,
             ),
-            color: bgColor,
-            child: Column(
-              children: [
-                Markdown(
-                  selectable: true,
-                  data: mdMsg,
-                  shrinkWrap: true,
-                  styleSheet: MarkdownStyleSheet(
-                    p: TextStyle(color: textColor), // 修改段落文字颜色
-                    h1: TextStyle(color: textColor), // 修改一级标题文字颜色
-                    h2: TextStyle(color: textColor), // 修改二级标题文字颜色
-                    h3: TextStyle(color: textColor), // 修改三级标题文字颜色
-                    h4: TextStyle(color: textColor), // 修改四级标题文字颜色
-                    h5: TextStyle(color: textColor), // 修改五级标题文字颜色
-                    h6: TextStyle(color: textColor), // 修改六级标题文字颜色
-                    blockquote: TextStyle(color: textColor), // 修改引用文字颜色
-                    codeblockDecoration: BoxDecoration(
-                      color: Colors.black, // 修改代码块背景颜色
-                      borderRadius: BorderRadius.circular(8),
+          if (!left) const SizedBox(width: 58),
+          const SizedBox(width: 3),
+          Expanded(
+            child: Card(
+              elevation: 0,
+              shape: ContinuousRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              color: bgColor,
+              child: Column(
+                children: [
+                  Markdown(
+                    selectable: true,
+                    data: mdMsg,
+                    shrinkWrap: true,
+                    styleSheet: MarkdownStyleSheet(
+                      p: TextStyle(color: textColor), // 修改段落文字颜色
+                      h1: TextStyle(color: textColor), // 修改一级标题文字颜色
+                      h2: TextStyle(color: textColor), // 修改二级标题文字颜色
+                      h3: TextStyle(color: textColor), // 修改三级标题文字颜色
+                      h4: TextStyle(color: textColor), // 修改四级标题文字颜色
+                      h5: TextStyle(color: textColor), // 修改五级标题文字颜色
+                      h6: TextStyle(color: textColor), // 修改六级标题文字颜色
+                      blockquote: TextStyle(color: textColor), // 修改引用文字颜色
+                      codeblockDecoration: BoxDecoration(
+                        color: Colors.black, // 修改代码块背景颜色
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      code: const TextStyle(color: Colors.white70), // 修改代码文字颜色
                     ),
-                    code: const TextStyle(color: Colors.white70), // 修改代码文字颜色
                   ),
-                ),
-                Column(
-                  children: recommendations
-                      .map((e) => Padding(
-                            padding: const EdgeInsets.only(left: 10),
-                            child: Align(
-                              alignment: Alignment.topLeft,
-                              child: Card(
-                                elevation: 0,
-                                shape: ContinuousRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10),
-                                  side: const BorderSide(
-                                    color: Color.fromARGB(255, 216, 216, 216),
-                                    width: 1,
+                  if (showRecommendations)
+                    Column(
+                      children: recommendations
+                          .map((e) => Padding(
+                                padding: const EdgeInsets.only(left: 10),
+                                child: FadeInParent(
+                                  child: Align(
+                                    alignment: Alignment.topLeft,
+                                    child: Card(
+                                      elevation: 0,
+                                      shape: ContinuousRectangleBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        side: const BorderSide(
+                                          color: Color.fromARGB(255, 216, 216, 216),
+                                          width: 1,
+                                        ),
+                                      ),
+                                      child: Padding(
+                                          padding: const EdgeInsets.all(3),
+                                          child: Text(
+                                            e,
+                                            style: const TextStyle(fontSize: 13, ),
+                                            textAlign: TextAlign.center,
+                                          )),
+                                    ),
                                   ),
                                 ),
-                                child: Padding(
-                                    padding: const EdgeInsets.all(6),
-                                    child: Text(e)),
-                              ),
-                            ),
-                          ))
-                      .toList(),
-                ),
-                Row(
-                  children: [
-                    const SizedBox(
-                      width: 4,
+                              ))
+                          .toList(),
                     ),
-                    if (left)
-                      IconButton(
-                          onPressed: () {
-                            if(thumbUp != 'up') {
-                              ChatController().setThumbUp(index, 'up');
-                            }
-                            else {
-                              ChatController().setThumbUp(index, ''); 
-                            }
-                          },
-                          icon: Icon(
-                            thumbUp == 'up'
-                                ? Icons.thumb_up_alt
-                                : Icons.thumb_up_alt_outlined,
-                            color: const Color.fromARGB(255, 56, 56, 56),
-                            size: 20,
-                          )),
-                    if (left)
-                      IconButton(
-                          onPressed: () {
-                            if(thumbUp!= 'down') {
-                              ChatController().setThumbUp(index, 'down');
-                            }
-                            else {
-                              ChatController().setThumbUp(index, ''); 
-                            }
-                          },
-                          icon: Icon(
-                            thumbUp == 'down'
-                                ? Icons.thumb_down_alt
-                                : Icons.thumb_down_alt_outlined,
-                            color: const Color.fromARGB(255, 56, 56, 56),
-                            size: 20,
-                          )),
-                  ],
-                )
-              ],
+                  Row(
+                    children: [
+                      const SizedBox(
+                        width: 4,
+                      ),
+                      if (left)
+                        IconButton(
+                            onPressed: () {
+                              if (thumbUp != 'up') {
+                                ChatController().setThumbUp(index, 'up');
+                              } else {
+                                ChatController().setThumbUp(index, '');
+                              }
+                            },
+                            icon: Icon(
+                              thumbUp == 'up'
+                                  ? Icons.thumb_up_alt
+                                  : Icons.thumb_up_alt_outlined,
+                              color: const Color.fromARGB(255, 56, 56, 56),
+                              size: 20,
+                            )),
+                      if (left)
+                        IconButton(
+                            onPressed: () {
+                              if (thumbUp != 'down') {
+                                ChatController().setThumbUp(index, 'down');
+                              } else {
+                                ChatController().setThumbUp(index, '');
+                              }
+                            },
+                            icon: Icon(
+                              thumbUp == 'down'
+                                  ? Icons.thumb_down_alt
+                                  : Icons.thumb_down_alt_outlined,
+                              color: const Color.fromARGB(255, 56, 56, 56),
+                              size: 20,
+                            )),
+                      if (left && recommendations.isNotEmpty)
+                        IconButton(
+                            onPressed: () {
+                              if (showRecommendations) {
+                                ChatController()
+                                    .setShowRecommendations(false, index);
+                              } else {
+                                ChatController()
+                                    .setShowRecommendations(true, index);
+                              }
+                            },
+                            icon: Icon(
+                              showRecommendations
+                                  ? Icons.expand_less
+                                  : Icons.expand_more,
+                              color: const Color.fromARGB(255, 56, 56, 56),
+                              size: 20,
+                            )),
+                    ],
+                  )
+                ],
+              ),
             ),
           ),
-        ),
-        const SizedBox(width: 3),
-        if (!left)
-          HeadImg(
-            imgText: imgText,
-            bgColor: headBGColor,
-            textColor: headTextColor,
-          ),
-        if (left) const SizedBox(width: 58),
-      ],
+          const SizedBox(width: 3),
+          if (!left)
+            HeadImg(
+              imgText: imgText,
+              bgColor: headBGColor,
+              textColor: headTextColor,
+            ),
+          if (left) const SizedBox(width: 58),
+        ],
+      ),
     );
   }
 }

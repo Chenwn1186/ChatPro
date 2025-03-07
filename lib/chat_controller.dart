@@ -162,6 +162,12 @@ class Chat {
           OpenAIChatCompletionChoiceMessageContentItemModel.text(
             '',
           ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            'true',
+          ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            '',
+          ),
         ],
       );
     } catch (e, stackTrace) {
@@ -177,11 +183,27 @@ class Chat {
             OpenAIChatCompletionChoiceMessageContentItemModel.text(
           recommendations,
         );
-        content[content.length - 1] = lastMsg;
+        // content[content.length - 1] = lastMsg;
         saveRecord();
       }
     } catch (e, stackTrace) {
       Logger.logError('Chat 设置推荐出错: $e', stackTrace);
+    }
+  }
+
+  void setShowRecommendations(bool showRecommendations, int index) {
+    try {
+      if (content.isNotEmpty) {
+        var msg = content[index];
+        msg.content![3] =
+            OpenAIChatCompletionChoiceMessageContentItemModel.text(
+          showRecommendations.toString(),
+        );
+        saveRecord();
+      } 
+    } 
+    catch (e, stackTrace) {
+      Logger.logError('Chat 设置推荐出错: $e', stackTrace); 
     }
   }
 
@@ -199,9 +221,16 @@ class Chat {
           OpenAIChatCompletionChoiceMessageContentItemModel.text(
             '',
           ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            'true',
+          ),
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            '',
+          ),
         ],
       ));
       saveRecord();
+      setShowRecommendations(false, content.length - 2);
       if (content.length > 20) {
         var sc = content.sublist(0, 2);
         var text = sc.map((e) => e.toMap().toString()).toList();
@@ -255,6 +284,7 @@ class Chat {
         var msg = content[index].content!.first.text!;
         var left = content[index].role == OpenAIChatMessageRole.assistant;
         var thumbUp = content[index].content![2].text!;
+        bool showRecommendations = content[index].content![3].text! == 'true';
         if (content[index].role == OpenAIChatMessageRole.system) {
           return const SizedBox();
         }
@@ -269,10 +299,11 @@ class Chat {
                 left: left,
                 recommendations: rcmList2,
                 index: index,
-                thumbUp: thumbUp);
+                thumbUp: thumbUp,
+                showRecommendations: showRecommendations);
           }
         }
-        return _build(mdMsg: msg, left: left, index: index, thumbUp: thumbUp);
+        return _build(mdMsg: msg, left: left, index: index, thumbUp: thumbUp, showRecommendations: showRecommendations);
       }
       return const SizedBox();
     } catch (e, stackTrace) {
@@ -295,7 +326,7 @@ class Chat {
       {required String mdMsg,
       required bool left,
       List<String> recommendations = const [],
-      required int index,required String thumbUp}) {
+      required int index,required String thumbUp, bool showRecommendations = false}) {
     try {
       if (left) {
         return ChatPageMsg(
@@ -309,6 +340,7 @@ class Chat {
           recommendations: recommendations,
           index: index,
           thumbUp: thumbUp,
+          showRecommendations: showRecommendations,
         );
       } else {
         return ChatPageMsg(
@@ -322,6 +354,7 @@ class Chat {
           recommendations: recommendations,
           index: index,
           thumbUp: thumbUp,
+          showRecommendations: showRecommendations,
         );
       }
     } catch (e, stackTrace) {
@@ -363,6 +396,8 @@ class ChatController with ChangeNotifier {
   // List<String> get chatTitles => _chatRecords.keys.toList();
   List<String> get chatTitles => _chats.keys.toList();
   String currentTitle = '';
+
+  ScrollController chatListScrollController = ScrollController();
 
   Chat getChat(String title) {
     try {
@@ -460,7 +495,13 @@ class ChatController with ChangeNotifier {
             print('contentMap: $contentMap');
             var rcmStr = List<String>.from(contentMap['Recommendations']!);
             _chats[title]!.setRecommendations(json.encode(rcmStr));
+            
             notifyListeners();
+            if(chatListScrollController.hasClients) {
+              Future.delayed(const Duration(milliseconds: 100), () {
+                chatListScrollController.jumpTo(chatListScrollController.position.maxScrollExtent);
+              });
+            }
           }, records: _chats[title]!.getLastMsgModel(20));
         }
 
@@ -656,6 +697,18 @@ class ChatController with ChangeNotifier {
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController setThumbUp 方法出错: $e', stackTrace);
+    }
+  }
+
+  void setShowRecommendations(bool showRecommendations, int index) {
+    try{
+      if (_chats.containsKey(currentTitle)) {
+        _chats[currentTitle]!.setShowRecommendations(showRecommendations, index);
+        notifyListeners();
+      }
+    }
+    catch(e, stackTrace){
+      Logger.logError('ChatController setShowRecommendations 方法出错: $e', stackTrace); 
     }
   }
 

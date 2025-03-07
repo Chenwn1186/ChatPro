@@ -23,6 +23,8 @@ class ChatList extends StatelessWidget {
                   title: Text(title),
                   onTap: () {
                     ChatController().selectedImgs = [];
+                    ChatController().chatListScrollController.dispose();
+                    ChatController().chatListScrollController = ScrollController();
                     ChatController().currentTitle = title;
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => ChatPage(
