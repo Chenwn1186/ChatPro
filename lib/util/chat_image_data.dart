@@ -35,9 +35,7 @@ class ChatImageData {
                 ChatImageDataItem(
                     title: '时间', content: time, width: size.width * 0.20),
                 ChatImageDataItem(
-                    title: '地点',
-                    content: location,
-                    width: size.width * 0.20),
+                    title: '地点', content: location, width: size.width * 0.20),
                 ChatImageDataItem(
                     title: '场景', content: scene, width: size.width * 0.20),
                 ChatImageDataItem(
@@ -57,13 +55,9 @@ class ChatImageData {
                     content: activitity.join('，'),
                     width: size.width * 0.20),
                 ChatImageDataItem(
-                    title: '情绪',
-                    content: emotion,
-                    width: size.width * 0.20),
+                    title: '情绪', content: emotion, width: size.width * 0.20),
                 ChatImageDataItem(
-                    title: '描述',
-                    content: describe,
-                    width: size.width * 0.20),
+                    title: '描述', content: describe, width: size.width * 0.20),
               ],
             ),
           ),
@@ -71,9 +65,7 @@ class ChatImageData {
             alignment: Alignment.centerRight,
             child: IconButton(
                 onPressed: () {
-                  var path = ChatController()
-                      .getImgsText(title)
-                      .split('\n')[index];
+                  var path = ChatController().getImgs(title)[index];
                   showEditDialog(context, path);
                 },
                 icon: const Icon(Icons.edit)),
@@ -86,7 +78,7 @@ class ChatImageData {
 
   void updateData() {
     try {
-      var path = ChatController().getImgsText(title).split('\n')[index];
+      var path = ChatController().getImgs(title)[index];
       var jsonPath = path.replaceAll(RegExp(r'\.[^.]+$'), '.json');
       var file = File(jsonPath);
       if (!file.existsSync()) return;
@@ -105,9 +97,7 @@ class ChatImageData {
       emotion = data['情绪'];
       describe = data['更新描述'] ?? '';
     } catch (e, stackTrace) {
-      Logger.logError(
-        'chat image data updateData 方法出错: $e',stackTrace
-      );
+      Logger.logError('chat image data updateData 方法出错: $e', stackTrace);
     }
   }
 
@@ -201,7 +191,7 @@ class ChatImageData {
               child: const Text('取消'),
             ),
             TextButton(
-              onPressed: () async {
+              onPressed: (){
                 // 获取输入框中的数据
                 time = timeController.text;
                 location = locationController.text;
@@ -215,7 +205,7 @@ class ChatImageData {
 
                 // 保存数据到 JSON 文件
                 var path =
-                    ChatController().getImgsText(title).split('\n')[index];
+                    ChatController().getImgs(title)[index];
                 var jsonPath = path.replaceAll(RegExp(r'\.[^.]+$'), '.json');
                 var file = File(jsonPath);
 
@@ -232,12 +222,17 @@ class ChatImageData {
                 };
 
                 try {
-                  await file.writeAsString(json.encode(data));
-                  ChatController().update();
+                  var fileW = file.writeAsString(json.encode(data));
+                  fileW.then((value) {
+                    // Logger.log('chat image data save json success');
+                    ChatController().update();
+                  });
+                  
+                  
                   Navigator.of(context).pop();
                 } catch (e) {
                   // 处理保存文件时的错误
-                  print('保存文件时出错: $e');
+                  Logger.logError('chat image data save json 方法出错: $e');
                 }
               },
               child: const Text('保存'),

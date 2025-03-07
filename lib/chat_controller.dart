@@ -28,11 +28,12 @@ class Logger {
 
 class ImgRecord {
   final String title;
-  String imgMDText;
-  late String lastImgs;
-  String get lastImgMDText => imgMDText;
-  ImgRecord({this.imgMDText = '', required this.title}) {
+  // String imgMDText;
+  // String get lastImgMDText => imgMDText;
+  late List<String> imgs;
+  ImgRecord({required this.title, List<String>? imgs}) {
     try {
+      this.imgs = imgs ?? [];
       saveRecord();
     } catch (e, stackTrace) {
       Logger.logError('ImgRecord 构造函数中保存记录出错: $e', stackTrace);
@@ -41,40 +42,41 @@ class ImgRecord {
 
   @override
   bool operator ==(Object other) {
-    return other is ImgRecord && other.imgMDText == imgMDText;
+    return other is ImgRecord && other.imgs == imgs;
   }
 
   @override
-  int get hashCode => imgMDText.hashCode;
+  int get hashCode => imgs.hashCode;
 
   factory ImgRecord.fromPath(String path) {
+    final File file = File(path);
+    final fileName = path.replaceAll('.json', '').split('/').last;
     try {
-      final File file = File(path);
       if (file.existsSync()) {
-        final fileName = file.uri.pathSegments.last.split('.').first;
-        var imgMDText = file.readAsStringSync();
-        return ImgRecord(title: fileName, imgMDText: imgMDText);
+        // var imgMDText = file.readAsStringSync();
+        var imgsJson = json.decode(file.readAsStringSync()) as List<dynamic>;
+        var imgs = imgsJson.map((e) => e.toString()).toList();
+        return ImgRecord(title: fileName, imgs: imgs);
       }
-      return ImgRecord(title: '-imgs');
+      return ImgRecord(title: '$fileName-imgs');
     } catch (e, stackTrace) {
       Logger.logError('ImgRecord 从路径创建实例出错: $e', stackTrace);
-      return ImgRecord(title: '-imgs');
+      return ImgRecord(title: '$fileName-imgs');
     }
   }
 
   void saveRecord() {
     try {
-      final file = File('chats/$title.txt');
-      file.writeAsStringSync(imgMDText);
+      final file = File('chats/$title.json');
+      file.writeAsStringSync(json.encode(imgs));
     } catch (e, stackTrace) {
       Logger.logError('ImgRecord 保存记录出错: $e', stackTrace);
     }
   }
 
-  void updateRecord(String imgMDText) {
+  void addImgs(List<String> paths) {
     try {
-      this.imgMDText += imgMDText;
-      lastImgs = imgMDText;
+      imgs.addAll(paths);
       saveRecord();
     } catch (e, stackTrace) {
       Logger.logError('ImgRecord 更新记录出错: $e', stackTrace);
@@ -83,7 +85,7 @@ class ImgRecord {
 
   void clearRecord() {
     try {
-      imgMDText = '';
+      imgs = [];
       saveRecord();
     } catch (e, stackTrace) {
       Logger.logError('ImgRecord 清空记录出错: $e', stackTrace);
@@ -200,10 +202,9 @@ class Chat {
           showRecommendations.toString(),
         );
         saveRecord();
-      } 
-    } 
-    catch (e, stackTrace) {
-      Logger.logError('Chat 设置推荐出错: $e', stackTrace); 
+      }
+    } catch (e, stackTrace) {
+      Logger.logError('Chat 设置推荐出错: $e', stackTrace);
     }
   }
 
@@ -303,7 +304,12 @@ class Chat {
                 showRecommendations: showRecommendations);
           }
         }
-        return _build(mdMsg: msg, left: left, index: index, thumbUp: thumbUp, showRecommendations: showRecommendations);
+        return _build(
+            mdMsg: msg,
+            left: left,
+            index: index,
+            thumbUp: thumbUp,
+            showRecommendations: showRecommendations);
       }
       return const SizedBox();
     } catch (e, stackTrace) {
@@ -315,7 +321,8 @@ class Chat {
   void setThumbUp(int index, String thumbUp) {
     try {
       var msg = content[index];
-      msg.content![2] = OpenAIChatCompletionChoiceMessageContentItemModel.text(thumbUp);
+      msg.content![2] =
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(thumbUp);
       saveRecord();
     } catch (e, stackTrace) {
       Logger.logError('Chat 点赞出错: $e', stackTrace);
@@ -326,7 +333,9 @@ class Chat {
       {required String mdMsg,
       required bool left,
       List<String> recommendations = const [],
-      required int index,required String thumbUp, bool showRecommendations = false}) {
+      required int index,
+      required String thumbUp,
+      bool showRecommendations = false}) {
     try {
       if (left) {
         return ChatPageMsg(
@@ -420,31 +429,34 @@ class ChatController with ChangeNotifier {
     }
   }
 
-  String getImgsText(String title) {
+  List<String> getImgs(String title) {
     try {
-      return _imgRecords['$title-imgs']?.imgMDText ?? '';
+      return _imgRecords['$title-imgs']?.imgs ?? [];
     } catch (e, stackTrace) {
-      Logger.logError('ChatController getImgsText 方法出错: $e', stackTrace);
-      return '';
+      Logger.logError('ChatController getImgs 方法出错: $e', stackTrace);
+      return [];
     }
   }
 
   // 读取 chats 目录下的所有聊天记录文件
   Future<void> readAllChats() async {
     final directory = Directory('chats');
+    if (!directory.existsSync()) {
+      directory.createSync();
+    }
     final files = directory.listSync().whereType<File>();
     for (final file in files) {
       try {
         final fileName = file.uri.pathSegments.last;
-        if (fileName.endsWith('.json')) {
+        if (fileName.endsWith('-imgs.json')) {
           final title = fileName.replaceAll('.json', '');
-          final chat = Chat.fromPath(file.path);
-          _chats[title] = chat;
-        } else if (fileName.endsWith('.txt')) {
-          final title = fileName.replaceAll('.txt', '');
           final imgRecord = ImgRecord.fromPath(file.path);
           _imgRecords[title] = imgRecord;
           Logger.log('imgRecord: $imgRecord');
+        } else if (fileName.endsWith('.json')) {
+          final title = fileName.replaceAll('.json', '');
+          final chat = Chat.fromPath(file.path);
+          _chats[title] = chat;
         }
       } catch (e, stackTrace) {
         Logger.logError('读取文件 ${file.path} 时出错: $e', stackTrace);
@@ -471,7 +483,7 @@ class ChatController with ChangeNotifier {
           var imgPaths = selectedImgs.map((e) {
             String path = '';
             if (e >= 0) {
-              path = _imgRecords['$title-imgs']!.imgMDText.split('\n')[e - 1];
+              path = _imgRecords['$title-imgs']!.imgs[e - 1];
             }
             return path;
           }).toList();
@@ -499,11 +511,12 @@ class ChatController with ChangeNotifier {
             print('contentMap: $contentMap');
             var rcmStr = List<String>.from(contentMap['Recommendations']!);
             _chats[title]!.setRecommendations(json.encode(rcmStr));
-            
+
             notifyListeners();
-            if(chatListScrollController.hasClients) {
+            if (chatListScrollController.hasClients) {
               Future.delayed(const Duration(milliseconds: 100), () {
-                chatListScrollController.jumpTo(chatListScrollController.position.maxScrollExtent);
+                chatListScrollController
+                    .jumpTo(chatListScrollController.position.maxScrollExtent);
               });
             }
             // 发送消息完成后，允许发送信息
@@ -586,18 +599,17 @@ class ChatController with ChangeNotifier {
     }
   }
 
-  void updateImgs(String title, String imgMDText) {
+  void addImgs(String title, List<String> paths) {
     try {
       var key = '$title-imgs';
       if (_imgRecords.containsKey(key)) {
-        _imgRecords[key]!.updateRecord(imgMDText);
+        _imgRecords[key]!.addImgs(paths);
       } else {
-        _imgRecords[key] = ImgRecord(title: key, imgMDText: imgMDText);
+        _imgRecords[key] = ImgRecord(title: key, imgs: paths);
       }
       notifyListeners();
-      //todo:解析图片数据并保存
     } catch (e, stackTrace) {
-      Logger.logError('ChatController updateImgs 方法出错: $e', stackTrace);
+      Logger.logError('ChatController addImgs 方法出错: $e', stackTrace);
     }
   }
 
@@ -660,17 +672,17 @@ class ChatController with ChangeNotifier {
   Future<void> summarize(String title) async {
     try {
       if (_chats.containsKey(title)) {
-        notifyListeners();
-        Logger.log('选择图片：$selectedImgs');
-        var imgPaths = selectedImgs.map((e) {
-          String path = '';
-          if (e >= 0) {
-            path = _imgRecords['$title-imgs']!.imgMDText.split('\n')[e - 1];
-          }
-          return path;
-        }).toList();
-        var imgDiscription =
-            json.decode(await analyseImg(title, imgPaths)).toString();
+        // notifyListeners();
+        // Logger.log('选择图片：$selectedImgs');
+        // var imgPaths = selectedImgs.map((e) {
+        //   String path = '';
+        //   if (e >= 0) {
+        //     path = _imgRecords['$title-imgs']!.imgs[e - 1];
+        //   }
+        //   return path;
+        // }).toList();
+        var imgDiscription = getImgAnalasis(title);
+        // json.decode(await analyseImg(title, imgPaths)).toString();
 
         var prompt = Prompts().getPrompt("summary_prompt");
         String content = '';
@@ -707,14 +719,35 @@ class ChatController with ChangeNotifier {
   }
 
   void setShowRecommendations(bool showRecommendations, int index) {
-    try{
+    try {
       if (_chats.containsKey(currentTitle)) {
-        _chats[currentTitle]!.setShowRecommendations(showRecommendations, index);
+        _chats[currentTitle]!
+            .setShowRecommendations(showRecommendations, index);
         notifyListeners();
       }
+    } catch (e, stackTrace) {
+      Logger.logError(
+          'ChatController setShowRecommendations 方法出错: $e', stackTrace);
     }
-    catch(e, stackTrace){
-      Logger.logError('ChatController setShowRecommendations 方法出错: $e', stackTrace); 
+  }
+
+  String getImgAnalasis(String title) {
+    try {
+      var path = 'chats/$title';
+      var result = '';
+      var directory = Directory(path);
+      if (directory.existsSync()) {
+        var files = directory.listSync();
+        for (var file in files) {
+          if (file is File && file.path.endsWith('.json')) {
+            result += file.readAsStringSync();
+          }
+        }
+      }
+      return result;
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController getImgAnalasis 方法出错: $e', stackTrace);
+      return '';
     }
   }
 

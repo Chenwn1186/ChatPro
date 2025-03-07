@@ -99,14 +99,14 @@ class _ChatPageState extends State<ChatPage> {
             children: [
               SizedBox(
                 width: width * 0.5,
-                child: Selector<ChatController, (String, List<int>)>(
-                  selector: (_, myType) => (
-                    myType.getImgsText(widget.chatRecord.title),
-                    myType.selectedImgs
+                child: Selector<ChatController, (List<String>, List<int>)>(
+                  selector: (_, chatController) => (
+                    chatController.getImgs(widget.chatRecord.title),
+                    chatController.selectedImgs
                   ),
                   shouldRebuild: (previous, next) => true,
                   builder: (context, data, child) {
-                    var imgs = data.$1.split('\n');
+                    var imgs = data.$1;
 
                     return Card(
                         color: const Color.fromARGB(200, 229, 229, 229),
@@ -126,6 +126,10 @@ class _ChatPageState extends State<ChatPage> {
                                 );
                               }
                               if (imgs[index - 1].isEmpty) {
+                                return const SizedBox();
+                              }
+                              if(!File(imgs[index - 1]).existsSync()){
+                                Logger.log('图片不存在: ${imgs[index - 1]}');
                                 return const SizedBox();
                               }
                               return Card(
@@ -236,7 +240,7 @@ class _ChatPageState extends State<ChatPage> {
                             itemBuilder: (BuildContext context, int index) {
                               if (index == messagesLength) {
                                 return const SizedBox(
-                                  height: 120,
+                                  height: 60,
                                 );
                               }
                               return Selector<ChatController,
@@ -364,18 +368,17 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 if (filePaths != null && filePaths.isNotEmpty) {
                   String chatDir = 'chats/${widget.title}';
                   await FileUtils.createDirectoryIfNotExists(chatDir);
-                  String imgMDText = '';
+                  List<String> imgs = [];
                   for (String filePath in filePaths) {
                     String newPath =
                         await FileUtils.copyFileToDirectory(filePath, chatDir);
                     newPath = newPath.replaceAll('\\', '/');
-
                     if (newPath.isNotEmpty) {
-                      imgMDText += '$newPath\n';
+                      imgs.add(newPath);
                     }
                   }
 
-                  ChatController().updateImgs(widget.title, imgMDText);
+                  ChatController().addImgs(widget.title, imgs);
                 }
               },
             ),
