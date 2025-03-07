@@ -106,7 +106,7 @@ class ChatImageData {
       describe = data['更新描述'] ?? '';
     } catch (e, stackTrace) {
       Logger.logError(
-        'chat image data updateData 方法出错: $e',
+        'chat image data updateData 方法出错: $e',stackTrace
       );
     }
   }

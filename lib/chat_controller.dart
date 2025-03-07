@@ -399,6 +399,8 @@ class ChatController with ChangeNotifier {
 
   ScrollController chatListScrollController = ScrollController();
 
+  bool sendPermission = true;
+
   Chat getChat(String title) {
     try {
       return _chats[title]!;
@@ -462,7 +464,9 @@ class ChatController with ChangeNotifier {
         );
         notifyListeners();
         if (!left) {
-          // var longRecord = await VectorDB().query(message, title, 6);
+          //此时禁止发送信息
+          sendPermission = false;
+          notifyListeners();
           Logger.log('选择图片：$selectedImgs');
           var imgPaths = selectedImgs.map((e) {
             String path = '';
@@ -502,6 +506,8 @@ class ChatController with ChangeNotifier {
                 chatListScrollController.jumpTo(chatListScrollController.position.maxScrollExtent);
               });
             }
+            // 发送消息完成后，允许发送信息
+            sendPermission = true;
           }, records: _chats[title]!.getLastMsgModel(20));
         }
 
