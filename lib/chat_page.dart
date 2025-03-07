@@ -22,7 +22,8 @@ class ChatPage extends StatefulWidget {
 }
 
 class _ChatPageState extends State<ChatPage> {
-  final ScrollController _scrollController = ChatController().chatListScrollController;
+  final ScrollController _scrollController =
+      ChatController().chatListScrollController;
 
   @override
   void dispose() {
@@ -92,6 +93,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ],
             backgroundColor: Colors.white,
+            blurRadius: 40,
           ),
           Row(
             children: [
@@ -205,9 +207,6 @@ class _ChatPageState extends State<ChatPage> {
                   },
                 ),
               ),
-              // SizedBox(
-              //   width: width * 0.25,
-              // ),
               Expanded(
                 child: Column(
                   children: [
@@ -233,8 +232,13 @@ class _ChatPageState extends State<ChatPage> {
                         return Expanded(
                           child: ListView.builder(
                             controller: _scrollController,
-                            itemCount: messagesLength,
+                            itemCount: messagesLength + 1,
                             itemBuilder: (BuildContext context, int index) {
+                              if (index == messagesLength) {
+                                return const SizedBox(
+                                  height: 120,
+                                );
+                              }
                               return Selector<ChatController,
                                   List<OpenAIChatCompletionChoiceMessageModel>>(
                                 selector: (_, chatController) => chatController
@@ -310,14 +314,17 @@ class _ChatInputFieldState extends State<ChatInputField> {
                     bindings: {
                       const SingleActivator(LogicalKeyboardKey.enter,
                           control: false): () {
-                        ChatController().sendMessage(
+                        if (!ChatController().sendPermission) return;
+                        if (_textEditingController.text.isNotEmpty) {
+                          ChatController().sendMessage(
                               widget.title, _textEditingController.text, false);
-                          
-                          // 发送消息后重新请求焦点
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _focusNode.requestFocus();
-                            _textEditingController.clear();
-                          });
+                        }
+
+                        // 发送消息后重新请求焦点
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          _focusNode.requestFocus();
+                          _textEditingController.clear();
+                        });
                       },
                       const SingleActivator(LogicalKeyboardKey.enter,
                           control: true): () {
@@ -372,22 +379,29 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 }
               },
             ),
-            IconButton(
-              icon: const Icon(Icons.send),
-              tooltip: "发送",
-              onPressed: () {
-                if (_textEditingController.text.isNotEmpty) {
-                  // 处理发送消息的逻辑
-                  ChatController().sendMessage(
-                      widget.title, _textEditingController.text, false);
-                  _textEditingController.clear();
-                  // 发送消息后重新请求焦点
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    _focusNode.requestFocus();
-                  });
-                }
+            Selector<ChatController, bool>(
+              selector: (_, chatController) => chatController.sendPermission,
+              builder: (context, sendPermission, child) {
+                return IconButton(
+                  icon: const Icon(Icons.send),
+                  tooltip: "发送",
+                  onPressed: !sendPermission
+                      ? null
+                      : () {
+                          if (_textEditingController.text.isNotEmpty) {
+                            // 处理发送消息的逻辑
+                            ChatController().sendMessage(widget.title,
+                                _textEditingController.text, false);
+                            _textEditingController.clear();
+                            // 发送消息后重新请求焦点
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              _focusNode.requestFocus();
+                            });
+                          }
+                        },
+                );
               },
-            ),
+            )
           ],
         ),
       ),
