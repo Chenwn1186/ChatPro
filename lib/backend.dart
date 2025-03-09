@@ -293,7 +293,9 @@ Future<String> analyseImgOnline(String imagePath) async {
     return '';
   }
   var request = http.MultipartRequest(
-      'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
+      // 'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
+      'POST',
+      Uri.parse("http://127.0.0.1:5408/analyseImg"));
   // 添加图片文件
   var stream = http.ByteStream(imageFile.openRead());
   var length = await imageFile.length();
@@ -306,7 +308,6 @@ Future<String> analyseImgOnline(String imagePath) async {
   var responseBody = await streamResponse.stream.bytesToString();
   var response = http.Response(responseBody, streamResponse.statusCode);
   if (response.statusCode == 200) {
-    
     var bodyMap = json.decode(response.body) as Map<String, dynamic>;
     // 打印结果
     Logger.log('解析图片结果:${bodyMap['result']}');
@@ -321,5 +322,3 @@ Future<String> analyseImgOnline(String imagePath) async {
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
   return response.body;
 }
-
-

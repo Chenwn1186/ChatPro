@@ -26,7 +26,8 @@ app = Flask(__name__)
 
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # 加载模型
-model = YOLO("D:/FlutterProjects/yolo/yolo11m.pt")
+# model = YOLO("D:/FlutterProjects/yolo/yolo11m.pt")
+model = YOLO("C:/Users/yuheng/Desktop/UIST25/Chat0308/ChatPro/backend/yolo11m.pt")
 
 
 @app.route("/analyseImg", methods=["POST"])
@@ -151,4 +152,4 @@ def get_money():
 
 
 if __name__ == "__main__":
-    app.run(host="172.16.91.233", port=5408, threaded=True)
+    app.run(host="127.0.0.1", port=5408, threaded=True)
