@@ -71,46 +71,52 @@ class _ChatPageState extends State<ChatPage> {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          PuraMultipleRadialGradients(
-            inputPoints: [
-              InputPoint(
-                const Offset(0.25, 0.25),
-                const Color.fromARGB(255, 54, 70, 244),
-                0.19,
-                0.25,
-                const Duration(seconds: 2),
-              ),
-              InputPoint(
-                const Offset(0.75, 0.25),
-                Colors.blue,
-                0.28,
-                0.35,
-                const Duration(seconds: 3),
-              ),
-              InputPoint(
-                const Offset(0.6, 0.75),
-                const Color.fromARGB(255, 76, 172, 175),
-                0.26,
-                0.38,
-                const Duration(seconds: 4),
-              ),
-              InputPoint(
-                const Offset(0.4, 0.5),
-                const Color.fromARGB(255, 221, 154, 225),
-                0.12,
-                0.28,
-                const Duration(seconds: 2, microseconds: 450),
-              ),
-              InputPoint(
-                const Offset(0.1, 0.8),
-                const Color.fromARGB(255, 0, 250, 129),
-                0.12,
-                0.18,
-                const Duration(seconds: 2, microseconds: 450),
-              ),
-            ],
-            backgroundColor: Colors.white,
-            blurRadius: 40,
+          Selector<ChatController, String>(
+            selector: (_, myType) => ChatThemes().currentTheme,
+            shouldRebuild: (previous, next) => true,
+            builder: (context, currentTheme, child) {
+              return PuraMultipleRadialGradients(
+                inputPoints: [
+                  InputPoint(
+                    const Offset(0.25, 0.25),
+                    ChatThemes().getColors()[0],
+                    0.25,
+                    0.35,
+                    const Duration(seconds: 2),
+                  ),
+                  InputPoint(
+                    const Offset(0.75, 0.25),
+                    ChatThemes().getColors()[2],
+                    0.28,
+                    0.35,
+                    const Duration(seconds: 3),
+                  ),
+                  InputPoint(
+                    const Offset(0.6, 0.75),
+                    ChatThemes().getColors()[0],
+                    0.26,
+                    0.38,
+                    const Duration(seconds: 3),
+                  ),
+                  InputPoint(
+                    const Offset(0.4, 0.5),
+                    ChatThemes().getColors()[6],
+                    0.12,
+                    0.28,
+                    const Duration(seconds: 2, microseconds: 450),
+                  ),
+                  InputPoint(
+                    const Offset(0.1, 0.8),
+                    ChatThemes().getColors()[6],
+                    0.12,
+                    0.18,
+                    const Duration(seconds: 2, microseconds: 450),
+                  ),
+                ],
+                backgroundColor: Colors.white,
+                blurRadius: 40,
+              );
+            },
           ),
           Row(
             children: [

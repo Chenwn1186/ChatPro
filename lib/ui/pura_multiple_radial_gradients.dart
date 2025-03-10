@@ -139,7 +139,7 @@ class PuraMultipleRadialGradientsPainter extends CustomPainter {
       final gradient = RadialGradient(
         center: Alignment.center,
         radius: 1.0,
-        colors: [point.color.withValues(alpha: 0.8), point.color.withValues(alpha: 0.2)],
+        colors: [point.color.withOpacity( 0.8), point.color.withOpacity(0.2)],
       );
       final paint = Paint()
         ..shader = gradient.createShader(

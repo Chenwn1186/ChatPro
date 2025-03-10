@@ -1,5 +1,6 @@
 import 'package:chat_pro/chat_controller.dart';
 import 'package:chat_pro/ui/animations.dart';
+import 'package:chat_pro/ui/theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 
@@ -122,7 +123,7 @@ class ChatPageMsg extends StatelessWidget {
                               thumbUp == 'up'
                                   ? Icons.thumb_up_alt
                                   : Icons.thumb_up_alt_outlined,
-                              color: const Color.fromARGB(255, 56, 56, 56),
+                              color: ChatThemes().getColors()[3],
                               size: 20,
                             )),
                       if (left)
@@ -138,7 +139,7 @@ class ChatPageMsg extends StatelessWidget {
                               thumbUp == 'down'
                                   ? Icons.thumb_down_alt
                                   : Icons.thumb_down_alt_outlined,
-                              color: const Color.fromARGB(255, 56, 56, 56),
+                              color: ChatThemes().getColors()[3],
                               size: 20,
                             )),
                       if (left && recommendations.isNotEmpty)
@@ -156,7 +157,7 @@ class ChatPageMsg extends StatelessWidget {
                               showRecommendations
                                   ? Icons.expand_less
                                   : Icons.expand_more,
-                              color: const Color.fromARGB(255, 56, 56, 56),
+                              color: ChatThemes().getColors()[3],
                               size: 20,
                             )),
                     ],
