@@ -304,7 +304,8 @@ class ChatInputField extends StatefulWidget {
 }
 
 class _ChatInputFieldState extends State<ChatInputField> {
-  final TextEditingController _textEditingController = TextEditingController();
+  final TextEditingController _textEditingController =
+      ChatController().textEditingController;
   final FocusNode _focusNode = FocusNode();
 
   @override
@@ -315,7 +316,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
 
   @override
   void dispose() {
-    _textEditingController.dispose();
+    // _textEditingController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -338,40 +339,45 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
                 child: SingleChildScrollView(
                   child: CallbackShortcuts(
-                    bindings: {
-                      const SingleActivator(LogicalKeyboardKey.enter,
-                          control: false): () {
-                        if (!ChatController().sendPermission) return;
-                        if (_textEditingController.text.isNotEmpty) {
-                          ChatController().sendMessage(
-                              widget.title, _textEditingController.text, false);
-                        }
+                      bindings: {
+                        const SingleActivator(LogicalKeyboardKey.enter,
+                            control: false): () {
+                          if (!ChatController().sendPermission) return;
+                          if (_textEditingController.text.isNotEmpty) {
+                            ChatController().sendMessage(widget.title,
+                                _textEditingController.text, false);
+                          }
 
-                        // 发送消息后重新请求焦点
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          _focusNode.requestFocus();
-                          _textEditingController.clear();
-                        });
+                          // 发送消息后重新请求焦点
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            _focusNode.requestFocus();
+                            _textEditingController.clear();
+                          });
+                        },
+                        const SingleActivator(LogicalKeyboardKey.enter,
+                            control: true): () {
+                          _textEditingController.text += '\n';
+                        },
                       },
-                      const SingleActivator(LogicalKeyboardKey.enter,
-                          control: true): () {
-                        _textEditingController.text += '\n';
-                      },
-                    },
-                    child: TextField(
-                      controller: _textEditingController,
-                      focusNode: _focusNode,
-                      decoration: const InputDecoration(
-                        hintText: '输入消息...',
-                        border: InputBorder.none,
-                      ),
-                      maxLines: null,
-                      enableInteractiveSelection: true,
-                      enableIMEPersonalizedLearning: true,
-                      keyboardType: TextInputType.multiline,
-                      textInputAction: TextInputAction.newline,
-                    ),
-                  ),
+                      child: Selector<ChatController, TextEditingController>(
+                        selector: (_, chatController) =>
+                            chatController.textEditingController,
+                        builder: (context, textEditingController, child) {
+                          return TextField(
+                            controller: _textEditingController,
+                            focusNode: _focusNode,
+                            decoration: const InputDecoration(
+                              hintText: '输入消息...',
+                              border: InputBorder.none,
+                            ),
+                            maxLines: null,
+                            enableInteractiveSelection: true,
+                            enableIMEPersonalizedLearning: true,
+                            keyboardType: TextInputType.multiline,
+                            textInputAction: TextInputAction.newline,
+                          );
+                        },
+                      )),
                 ),
               ),
             ),

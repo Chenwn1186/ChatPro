@@ -88,17 +88,26 @@ class ChatPageMsg extends StatelessWidget {
                                       shape: ContinuousRectangleBorder(
                                         borderRadius: BorderRadius.circular(10),
                                         side: const BorderSide(
-                                          color: Color.fromARGB(255, 216, 216, 216),
+                                          color: Color.fromARGB(
+                                              255, 216, 216, 216),
                                           width: 1,
                                         ),
                                       ),
-                                      child: Padding(
-                                          padding: const EdgeInsets.all(3),
-                                          child: Text(
-                                            e,
-                                            style: const TextStyle(fontSize: 13, ),
-                                            textAlign: TextAlign.center,
-                                          )),
+                                      child: InkWell(
+                                        onTap: () {
+                                          ChatController().textEditingController.text = e;
+                                          ChatController().update();
+                                        },
+                                        child: Padding(
+                                            padding: const EdgeInsets.all(3),
+                                            child: Text(
+                                              e,
+                                              style: const TextStyle(
+                                                fontSize: 13,
+                                              ),
+                                              textAlign: TextAlign.center,
+                                            )),
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -141,6 +150,15 @@ class ChatPageMsg extends StatelessWidget {
                                   : Icons.thumb_down_alt_outlined,
                               color: ChatThemes().getColors()[3],
                               size: 20,
+                            )),
+                      if (left)
+                        IconButton(
+                            onPressed: () {
+                              ChatController().resendMsg();
+                            },
+                            icon: Icon(
+                              Icons.replay_outlined,
+                              color: ChatThemes().getColors()[3],
                             )),
                       if (left && recommendations.isNotEmpty)
                         IconButton(

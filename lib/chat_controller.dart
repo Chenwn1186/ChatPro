@@ -259,6 +259,23 @@ class Chat {
       var lastMsgs = content.sublist(startIndex);
       var res = [prompt];
       res.addAll(lastMsgs);
+      res = res.map((e) {
+        if (e.role == OpenAIChatMessageRole.assistant) {
+          var cont = e.content![4];
+          OpenAIChatCompletionChoiceMessageModel newMsg =
+              OpenAIChatCompletionChoiceMessageModel(
+                  role: e.role, content: [cont]);
+          return newMsg;
+        } else if (e.role == OpenAIChatMessageRole.user) {
+          var cont = e.content![0];
+          OpenAIChatCompletionChoiceMessageModel newMsg =
+              OpenAIChatCompletionChoiceMessageModel(
+                  role: e.role, content: [cont]);
+          return newMsg;
+        }
+        return e;
+      }).toList();
+      Logger.log('res: ${res.toString()}');
       return res;
       // return lastMsgs;
     } catch (e, stackTrace) {
@@ -408,6 +425,7 @@ class ChatController with ChangeNotifier {
   String lastInput = '';
 
   ScrollController chatListScrollController = ScrollController();
+  final TextEditingController textEditingController = TextEditingController();
 
   bool sendPermission = true;
 
@@ -466,19 +484,23 @@ class ChatController with ChangeNotifier {
   }
 
   // 发送消息到指定对话
-  Future<void> sendMessage(String title, String message, bool left) async {
+  Future<void> sendMessage(String title, String message, bool left,
+      {bool resend = false}) async {
     try {
       if (_chats.containsKey(title)) {
-        _chats[title]!.addMsg(
-          role: left
-              ? OpenAIChatMessageRole.assistant
-              : OpenAIChatMessageRole.user,
-          text: message,
-        );
+        if (!resend) {
+          _chats[title]!.addMsg(
+            role: left
+                ? OpenAIChatMessageRole.assistant
+                : OpenAIChatMessageRole.user,
+            text: message,
+          );
+        }
         notifyListeners();
         if (!left) {
           //此时禁止发送信息
           sendPermission = false;
+          lastInput = message;
           notifyListeners();
           Logger.log('选择图片：$selectedImgs');
           var imgPaths = selectedImgs.map((e) {
@@ -490,7 +512,9 @@ class ChatController with ChangeNotifier {
           }).toList();
           Logger.log('用户输入：$message');
           Logger.log('用户选择的图片：$imgPaths');
-          sendMessage(title, '正在解析图片中...', true);
+          if (!resend) {
+            sendMessage(title, '正在解析图片中...', true);
+          }
           var imgDiscription =
               json.decode(await analyseImg(title, imgPaths)).toString();
           var imgDiscriptionRes = '图片解析结果：$imgDiscription';
@@ -502,8 +526,10 @@ class ChatController with ChangeNotifier {
 
           _chats[title]!.setPrompt(prompt);
           _chats[title]!.setLastMsg('正在思考中...');
-          await OpenAIUserInteraction().sendMessageWithStream(
-              '$imgDiscriptionRes, \n用户输入: $message', (event) {
+          var input = resend
+              ? '$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!'
+              : '$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!';
+          await OpenAIUserInteraction().sendMessageWithStream(input, (event) {
             final firstCompletionChoice = event.choices.first;
             content += firstCompletionChoice.delta.content?.first?.text ?? '';
             _chats[title]!.setLastMsg(extractResponseContent(content));
@@ -536,6 +562,16 @@ class ChatController with ChangeNotifier {
             _chats[title]!.setRecommendations(json.encode(rcmStr));
 
             notifyListeners();
+            var cont = """{
+                "Adopted Strategy": ${contentMap["Adopted Strategy"]},
+                "Response": ${contentMap["Response"]},
+                "updated_image": ${contentMap["updated_image"]},
+                "Recommendations": ${contentMap["Recommendations"]}
+              }""";
+            _chats[title]!.content.last.content![4] =
+                OpenAIChatCompletionChoiceMessageContentItemModel.text(cont);
+
+            Logger.log('contentMap: $cont');
             if (chatListScrollController.hasClients) {
               Future.delayed(const Duration(milliseconds: 100), () {
                 chatListScrollController
@@ -551,6 +587,14 @@ class ChatController with ChangeNotifier {
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController sendMessage 方法出错: $e', stackTrace);
+    }
+  }
+
+  Future<void> resendMsg() async {
+    try {
+      sendMessage(currentTitle, lastInput, false, resend: true);
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController resendMsg 方法出错: $e', stackTrace);
     }
   }
 

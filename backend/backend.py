@@ -44,6 +44,26 @@ def analyse_img():
         # 获取图片格式信息
         image_format = image.format
 
+        # 计算压缩前图片体积
+        before_buffered = io.BytesIO()
+        image.save(before_buffered, format=image_format)
+        before_size = len(before_buffered.getvalue()) / (1024 * 1024)
+        print(f"压缩前图片体积: {before_size:.2f} MB")
+
+        # 进行图片质量压缩
+        # 压缩质量，范围从 0 到 100，数值越小压缩率越高，图片质量越低
+        quality = 80 
+        buffered = io.BytesIO()
+        image.save(buffered, format=image_format, quality=quality)
+        # 重置文件指针到文件开头
+        buffered.seek(0) 
+        # 使用压缩后的图片数据重新打开图片
+        image = Image.open(buffered) 
+
+        # 计算压缩后图片体积
+        after_size = len(buffered.getvalue()) / (1024 * 1024)
+        print(f"压缩后图片体积: {after_size:.2f} MB")
+
         # 读取图片元数据
         metadata = image._getexif() if image._getexif() else {}
 
@@ -117,7 +137,6 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
         logging.error(f"调用 OpenAI API 时出错: {e}")
         get_money()
         return f"调用 OpenAI API 时出错: {e}"
-        raise
     
 
     # 记录函数结束时间
@@ -142,12 +161,23 @@ def get_money():
 
     payload = {}
     headers = {
-    'Authorization': f'Bearer {API_KEY}'
+        'Authorization': f'Bearer {API_KEY}'
     }
 
     response = requests.request("GET", url, headers=headers, data=payload)
-
-    print(f'剩余余额：{response.text}')
+    if response.status_code == 200:
+        try:
+            data = response.json()
+            if data.get("status") == "success":
+                total_available = data["data"]["total_available"]
+                total_available_currency_symbol = data["data"]["total_available_currency_symbol"]
+                print(f'剩余余额：{total_available_currency_symbol}{total_available}')
+            else:
+                print(f"请求失败，错误信息：{data.get('error_message', '未知错误')}")
+        except (KeyError, ValueError):
+            print("解析响应数据时出错，请检查响应格式。")
+    else:
+        print(f"请求失败，状态码：{response.status_code}")
 
 
 if __name__ == "__main__":
