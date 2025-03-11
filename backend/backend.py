@@ -52,7 +52,7 @@ def analyse_img():
 
         # 进行图片质量压缩
         # 压缩质量，范围从 0 到 100，数值越小压缩率越高，图片质量越低
-        quality = 80 
+        quality = 70 
         buffered = io.BytesIO()
         image.save(buffered, format=image_format, quality=quality)
         # 重置文件指针到文件开头
@@ -60,12 +60,20 @@ def analyse_img():
         # 使用压缩后的图片数据重新打开图片
         image = Image.open(buffered) 
 
+        # 读取图片元数据（在转换为 PNG 之前）
+        metadata = image._getexif() if image._getexif() else {}
+
+        # 将图像转换为 PNG 格式
+        image = image.convert('RGB')
+        buffered = io.BytesIO()
+        image.save(buffered, format='JPEG')
+        buffered.seek(0)
+        image = Image.open(buffered)
+        image_format = 'JPEG'
+
         # 计算压缩后图片体积
         after_size = len(buffered.getvalue()) / (1024 * 1024)
         print(f"压缩后图片体积: {after_size:.2f} MB")
-
-        # 读取图片元数据
-        metadata = image._getexif() if image._getexif() else {}
 
         # 将图片转换为 base64 编码
         buffered = io.BytesIO()
@@ -85,7 +93,7 @@ def analyse_img():
     """
     
         # 调用OpenAI API获取大模型的回复
-        response = get_openai_response(conversation_str, yolo_results, metadata, prompt)
+        response, code = get_openai_response(conversation_str, yolo_results, metadata, prompt)
 
         # 处理 Markdown 格式数据，提取 JSON 内容
         start_tag = "```json"
@@ -94,7 +102,7 @@ def analyse_img():
         response = response.replace(end_tag, "")
         # print(f'from ip: {ip}, response:{response}')
         print(f'from ip: {ip}, response:{response}')
-        return jsonify({"result": response}), 200
+        return jsonify({"result": response}), code
 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -120,7 +128,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
             "content": [
                 {"type": "text", "text": f'yolo results:{yolo_results}'},
                 {"type": "text", "text": f'metadata:{metadata}'},
-                {"type": "image_url", "image_url": {"url": image_url}},
+                {"type": "image_url", "image_url": {"url": image_url, "detail": "high"}},
             ],
         },
     ]
@@ -136,7 +144,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
     except Exception as e:
         logging.error(f"调用 OpenAI API 时出错: {e}")
         get_money()
-        return f"调用 OpenAI API 时出错: {e}"
+        return f"调用 OpenAI API 时出错: {e}", 400
     
 
     # 记录函数结束时间
@@ -152,7 +160,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
     result = completion.choices[0].message.content
     # logging.info(f"大模型回复结果: {result}")
     get_money()
-    return result
+    return result, 200
 
 
 
