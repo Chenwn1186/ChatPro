@@ -552,14 +552,17 @@ class ChatController with ChangeNotifier {
               };
               _chats[title]!.setLastMsg(content);
             }
+            var rcmStr = List<String>.from(contentMap['Recommendations']!);
+            _chats[title]!.setRecommendations(json.encode(rcmStr));
+            // 发送消息完成后，允许发送信息
+            sendPermission = true;
+            notifyListeners();
             List<dynamic> updatedMemorys0 =
                 contentMap['updated_image']! as List<dynamic>;
             List<String> updatedMemorys =
                 updatedMemorys0.map((e) => e.toString()).toList();
             updateImgMemory(title, updatedMemorys, imgPaths);
             // print('contentMap: $contentMap');
-            var rcmStr = List<String>.from(contentMap['Recommendations']!);
-            _chats[title]!.setRecommendations(json.encode(rcmStr));
 
             notifyListeners();
             var cont = """{
@@ -578,8 +581,6 @@ class ChatController with ChangeNotifier {
                     .jumpTo(chatListScrollController.position.maxScrollExtent);
               });
             }
-            // 发送消息完成后，允许发送信息
-            sendPermission = true;
           }, records: _chats[title]!.getLastMsgModel(20));
         }
 
