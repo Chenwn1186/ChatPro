@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:chat_pro/chat_controller.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
@@ -45,10 +46,10 @@ class OpenAIUserInteraction {
 
   // 初始化 OpenAI API 密钥
   void init() {
-    OpenAI.apiKey = "sk-dPrv6dBqbgs5mfgn5Qw264FgXjEO2cQ8n6GWhwav2pLX8hB4";
-    OpenAI.baseUrl = "https://xiaoai.plus";
-    // OpenAI.apiKey = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY";
-    // OpenAI.baseUrl = "https://wcode.net/api/gpt";
+    // OpenAI.apiKey = "sk-dPrv6dBqbgs5mfgn5Qw264FgXjEO2cQ8n6GWhwav2pLX8hB4";
+    // OpenAI.baseUrl = "https://xiaoai.plus";
+    OpenAI.apiKey = "sk-PwAHRaa4EySMczCbBf99Cc35743c40B5B43cEc71762324F2";
+    OpenAI.baseUrl = "https://vip.yi-zhan.top";
   }
 
   /// 发送信息并接收 OpenAI 的回复
@@ -106,10 +107,10 @@ class OpenAIUserInteraction {
         // maxTokens: 600,
       );
       chatCompletion.listen(onData, onDone: onDone);
-      // Logger.log('===========================聊天记录=========================');
-      // for (var i in records) {
-      //   Logger.log('${i.role}: ${i.content}');
-      // }
+      Logger.log('===========================聊天记录=========================');
+      for (var i in records) {
+        Logger.log('${i.role}: ${i.content!.first.text}');
+      }
     } catch (e, stackTrace) {
       Logger.logError('发送消息到 OpenAI with stream时出错: $e', stackTrace);
     }
@@ -149,6 +150,12 @@ class Guidance {
       // 记录生成的引导消息的日志
       // Logger.log('生成的引导消息: $result');
       // 返回生成的引导消息
+      ChatController()
+              .getChat(ChatController().currentTitle)
+              .content
+              .last
+              .content![4] =
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(result);
       return result;
     } catch (e, stackTrace) {
       // 记录生成引导消息时出错的日志
@@ -306,7 +313,6 @@ Future<String> analyseImgOnline(String imagePath) async {
   var responseBody = await streamResponse.stream.bytesToString();
   var response = http.Response(responseBody, streamResponse.statusCode);
   if (response.statusCode == 200) {
-    
     var bodyMap = json.decode(response.body) as Map<String, dynamic>;
     // 打印结果
     Logger.log('解析图片结果:${bodyMap['result']}');
@@ -321,5 +327,3 @@ Future<String> analyseImgOnline(String imagePath) async {
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
   return response.body;
 }
-
-
