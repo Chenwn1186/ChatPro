@@ -37,7 +37,7 @@ class OpenAIUserInteraction {
     return _instance;
   }
 
-  String model = "gpt-4o";
+  String model = "deepseek-chat";
 
   // 私有构造函数，防止外部实例化
   OpenAIUserInteraction._internal() {

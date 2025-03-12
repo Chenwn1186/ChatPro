@@ -275,7 +275,7 @@ class Chat {
         }
         return e;
       }).toList();
-      Logger.log('res: ${res.toString()}');
+      // Logger.log('res: ${res.toString()}');
       return res;
       // return lastMsgs;
     } catch (e, stackTrace) {
@@ -526,6 +526,12 @@ class ChatController with ChangeNotifier {
 
           _chats[title]!.setPrompt(prompt);
           _chats[title]!.setLastMsg('正在思考中...');
+
+          
+          var records = _chats[title]!.getLastMsgModel(20);
+          records.removeLast();
+          records.removeLast();
+
           var input = resend
               ? '$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!'
               : '$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!';
@@ -581,7 +587,7 @@ class ChatController with ChangeNotifier {
                     .jumpTo(chatListScrollController.position.maxScrollExtent);
               });
             }
-          }, records: _chats[title]!.getLastMsgModel(20));
+          }, records: records);
         }
 
         notifyListeners();
