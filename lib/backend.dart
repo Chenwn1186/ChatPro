@@ -27,6 +27,7 @@ class Logger {
   }
 }
 
+
 class OpenAIUserInteraction {
   // 静态私有实例，用于存储单例
   static final OpenAIUserInteraction _instance =
@@ -37,7 +38,7 @@ class OpenAIUserInteraction {
     return _instance;
   }
 
-  String model = "deepseek-chat";
+  String model = "gpt-4o";
 
   // 私有构造函数，防止外部实例化
   OpenAIUserInteraction._internal() {
@@ -50,6 +51,8 @@ class OpenAIUserInteraction {
     // OpenAI.baseUrl = "https://xiaoai.plus";
     OpenAI.apiKey = "sk-PwAHRaa4EySMczCbBf99Cc35743c40B5B43cEc71762324F2";
     OpenAI.baseUrl = "https://vip.yi-zhan.top";
+    // OpenAI.apiKey = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY";
+    // OpenAI.baseUrl = "https://wcode.net/api/gpt";
   }
 
   /// 发送信息并接收 OpenAI 的回复
@@ -109,7 +112,7 @@ class OpenAIUserInteraction {
       chatCompletion.listen(onData, onDone: onDone);
       Logger.log('===========================聊天记录=========================');
       for (var i in records) {
-        Logger.log('${i.role}: ${i.content!.first.text}');
+        Logger.log('len: ${i.content!.length} ${i.role}: ${i.content!.first.text}');
       }
     } catch (e, stackTrace) {
       Logger.logError('发送消息到 OpenAI with stream时出错: $e', stackTrace);

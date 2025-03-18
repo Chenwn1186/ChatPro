@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:chat_pro/chat_controller.dart';
 import 'package:chat_pro/ui/pura_multiple_radial_gradients.dart';
@@ -11,6 +12,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 // import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:provider/provider.dart';
+
+import 'package:simple_canvas/draggable_image.dart';
+import 'package:simple_canvas/images_board.dart';
 
 // 将 ChatPage 改为 StatefulWidget
 class ChatPage extends StatefulWidget {
@@ -35,8 +39,8 @@ class _ChatPageState extends State<ChatPage> {
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.sizeOf(context);
-    var width = size.width;
-    // var height = size.height;
+    var width = size.width * 0.65;
+    var height = size.height;
 
     return Scaffold(
       appBar: AppBar(
@@ -120,119 +124,107 @@ class _ChatPageState extends State<ChatPage> {
           ),
           Row(
             children: [
-              SizedBox(
-                width: width * 0.5,
-                child: Selector<ChatController, (List<String>, List<int>)>(
-                  selector: (_, chatController) => (
-                    chatController.getImgs(widget.chatRecord.title),
-                    chatController.selectedImgs
-                  ),
-                  shouldRebuild: (previous, next) => true,
-                  builder: (context, data, child) {
-                    var imgs = data.$1;
-
-                    return Card(
-                        color: const Color.fromARGB(200, 229, 229, 229),
-                        elevation: 0,
-                        shape: ContinuousRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+              Selector<ChatController, (List<String>, List<int>)>(
+                selector: (_, chatController) => (
+                  chatController.getImgs(widget.chatRecord.title),
+                  chatController.selectedImgs
+                ),
+                shouldRebuild: (previous, next) => true,
+                builder: (context, data, child) {
+                  var imgs = data.$1;
+              
+                  return SizedBox(
+                    width: width,
+                    child: Stack(
+                      children: [
+                        SizedBox(
+                          width: width,
+                          height: height,
+                          child: ImagesBoard(
+                            width: width,
+                            height: height,
+                          ),
                         ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListView.builder(
-                            itemCount: imgs.length + 1,
-                            itemBuilder: (BuildContext context, int index) {
-                              if (index == 0) {
-                                return const Text(
-                                  '  图片',
-                                  style: TextStyle(fontSize: 22),
-                                );
-                              }
-                              if (imgs[index - 1].isEmpty) {
-                                return const SizedBox();
-                              }
-                              if (!File(imgs[index - 1]).existsSync()) {
-                                Logger.log('图片不存在: ${imgs[index - 1]}');
-                                return const SizedBox();
-                              }
-                              return Card(
-                                child: Row(
-                                  children: [
-                                    SizedBox(
-                                      width: width * 0.22,
-                                      height: width * 0.22,
-                                      child: InkWell(
-                                        onTap: () {
-                                          // 处理点击事件
-                                          // print('点击了图片 ${imgs[index]}');
-                                          if (ChatController()
-                                              .selectedImgs
-                                              .contains(index)) {
-                                            ChatController()
-                                                .selectedImgs
-                                                .remove(index);
-                                          } else {
-                                            ChatController()
-                                                .selectedImgs
-                                                .add(index);
-                                          }
-                                          ChatController().update();
-                                        },
-                                        child: Padding(
-                                          padding: const EdgeInsets.only(
-                                              bottom: 4.0, top: 4.0),
-                                          child: Material(
-                                              color: const Color.fromARGB(
-                                                  0, 59, 173, 255),
-                                              shape: ContinuousRectangleBorder(
-                                                borderRadius:
-                                                    BorderRadius.circular(16),
-                                              ),
-                                              clipBehavior: Clip.antiAlias,
-                                              child: Padding(
-                                                padding: !ChatController()
-                                                        .selectedImgs
-                                                        .contains(index)
-                                                    ? const EdgeInsets.all(0.0)
-                                                    : const EdgeInsets.all(8.0),
-                                                child: Container(
-                                                    clipBehavior:
-                                                        Clip.antiAlias,
-                                                    decoration: ShapeDecoration(
-                                                        shape:
-                                                            ContinuousRectangleBorder(
-                                                      side: BorderSide(
-                                                        width: 3,
-                                                        color: !ChatController()
-                                                                .selectedImgs
-                                                                .contains(index)
-                                                            ? Colors.transparent
-                                                            : Colors.blue,
-                                                      ),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                              16),
-                                                    )),
-                                                    child: Image.file(
-                                                        File(imgs[index - 1]))),
-                                              )),
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: width * 0.25,
-                                      child: ChatImageData(index - 1,
-                                              title: widget.chatRecord.title)
-                                          .buildWidget(context),
-                                    )
-                                  ],
+                        Positioned(
+                          bottom: 10,
+                          child: SizedBox(
+                            height: 120,
+                            width: width * 0.65,
+                            child: Card(
+                              elevation: 0,
+                              color: const Color.fromRGBO(205, 205, 205, 0.486),
+                              clipBehavior: Clip.antiAlias,
+                              shape: const ContinuousRectangleBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(20)),
+                              ),
+                              child: BackdropFilter(filter: 
+                                ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                child: SizedBox(
+                                  height: 120,
+                                  width: width * 0.65,
                                 ),
+                            ),
+                          ),
+                        )),
+                        Positioned(
+                          bottom: 10,
+                          child: SizedBox(
+                            height: 120,
+                            width: width* 0.6,
+                            child: ListView.builder(
+                              // controller: ScrollController(),
+                              clipBehavior: Clip.none,
+                              scrollDirection: Axis.horizontal,
+                              itemCount: imgs.length,
+                              padding: const EdgeInsets.all(10),
+                              shrinkWrap: true,
+                              itemBuilder: (BuildContext context, int index) {
+                                return DraggableImage(
+                                  width: 100,
+                                  height: 100,
+                                  imgPath: imgs[index],
+                                  onTap: () {
+                                    ChatController().selectedImgs.add(index);
+                                    ChatController().currentImgIndex = index;
+                                    ChatController().update();
+                                  },
+                                  onRightTap: () {
+                                    ChatController().selectedImgs.remove(index);
+                                  },
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                        Positioned(
+                          bottom: 10,
+                          right: 10,
+                          child: Selector<ChatController, int>(
+                            selector: (_, chatController) =>
+                                chatController.currentImgIndex,
+                            // shouldRebuild: (previous, next) => true,
+                            builder: (context, currentIndex, child) {
+                              return Card(
+                                elevation: 4,
+                                shape: const ContinuousRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20)),
+                                ),
+                                child: ChatImageData(
+                                  currentIndex,
+                                  title: widget.chatRecord.title,
+                                  width: width * 0.3,
+                                  height: 300,
+                                ).buildWidget(context),
                               );
                             },
                           ),
-                        ));
-                  },
-                ),
+                        )
+                      ],
+                    ),
+                  );
+                },
               ),
               Expanded(
                 child: Column(
@@ -440,3 +432,4 @@ class _ChatInputFieldState extends State<ChatInputField> {
     );
   }
 }
+

@@ -257,6 +257,14 @@ class Chat {
     try {
       var startIndex = content.length > count ? content.length - count : 0;
       var lastMsgs = content.sublist(startIndex);
+      var prompt = OpenAIChatCompletionChoiceMessageModel(
+        role: OpenAIChatMessageRole.system,
+        content: [
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            this.prompt.content![0].text!,
+          ),
+        ],
+      );
       var res = [prompt];
       res.addAll(lastMsgs);
       res = res.map((e) {
@@ -415,6 +423,7 @@ class ChatController with ChangeNotifier {
   final Map<String, ImgRecord> _imgRecords = {};
   final Map<String, Chat> _chats = {};
   List<int> selectedImgs = [];
+  int currentImgIndex = -1;
   // 获取所有对话记录
   Map<String, Chat> get chats => _chats;
 
@@ -506,7 +515,8 @@ class ChatController with ChangeNotifier {
           var imgPaths = selectedImgs.map((e) {
             String path = '';
             if (e >= 0) {
-              path = _imgRecords['$title-imgs']!.imgs[e - 1];
+              // path = _imgRecords['$title-imgs']!.imgs[e - 1];
+              path = _imgRecords['$title-imgs']!.imgs[e];
             }
             return path;
           }).toList();
@@ -527,18 +537,21 @@ class ChatController with ChangeNotifier {
           _chats[title]!.setPrompt(prompt);
           _chats[title]!.setLastMsg('正在思考中...');
 
-          
           var records = _chats[title]!.getLastMsgModel(20);
           records.removeLast();
           records.removeLast();
 
           var input = resend
-              ? '$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!'
-              : '$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!';
+              ? "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!"
+              : "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!";
           await OpenAIUserInteraction().sendMessageWithStream(input, (event) {
             final firstCompletionChoice = event.choices.first;
-            content += firstCompletionChoice.delta.content?.first?.text ?? '';
-            _chats[title]!.setLastMsg(extractResponseContent(content));
+            try {
+              content += firstCompletionChoice.delta.content?.first?.text ?? '';
+              _chats[title]!.setLastMsg(extractResponseContent(content));
+            } catch (e) {
+              Logger.logError('ChatController 获取llm流式回复 出错: $e');
+            }
             notifyListeners();
           }, () {
             Logger.log('llm 回复: $content');

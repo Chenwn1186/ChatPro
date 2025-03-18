@@ -4,6 +4,7 @@ import 'package:chat_pro/chat_list.dart';
 import 'package:chinese_font_library/chinese_font_library.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_canvas/images_board.dart';
 
 void main() {
   runApp(const MainApp());
@@ -19,6 +20,7 @@ class MainApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ChatController()),
+        ChangeNotifierProvider(create: (_) => ImagesBoardManager()),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
