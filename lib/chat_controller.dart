@@ -576,14 +576,14 @@ class ChatController with ChangeNotifier {
             // 发送消息完成后，允许发送信息
             sendPermission = true;
             notifyListeners();
-            List<dynamic> updatedMemorys0 =
-                contentMap['updated_image']! as List<dynamic>;
-            List<String> updatedMemorys =
-                updatedMemorys0.map((e) => e.toString()).toList();
-            updateImgMemory(title, updatedMemorys, imgPaths);
+            // List<dynamic> updatedMemorys0 =
+            //     contentMap['updated_image']! as List<dynamic>;
+            // List<String> updatedMemorys =
+            //     updatedMemorys0.map((e) => e.toString()).toList();
+            // updateImgMemory(title, updatedMemorys, imgPaths);
             // print('contentMap: $contentMap');
 
-            notifyListeners();
+            // notifyListeners();
             var cont = """{
                 "Adopted Strategy": ${contentMap["Adopted Strategy"]},
                 "Response": ${contentMap["Response"]},

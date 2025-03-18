@@ -373,10 +373,10 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
               ),
             ),
-            // IconButton(onPressed: (){
-            //   ChatController().generateGuidence(widget.title);
-            // }, icon: const Icon(Icons.wysiwyg_outlined),
-            // tooltip: '生成引导',),
+            IconButton(onPressed: (){
+              ChatController().generateGuidence(widget.title);
+            }, icon: const Icon(Icons.wysiwyg_outlined),
+            tooltip: '生成引导',),
             IconButton(
               onPressed: () {
                 ChatController().summarize(widget.title);
