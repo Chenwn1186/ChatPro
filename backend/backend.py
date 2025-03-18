@@ -189,4 +189,5 @@ def get_money():
 
 
 if __name__ == "__main__":
-    app.run(host="172.16.91.233", port=5408, threaded=True)
+    # app.run(host="172.16.91.233", port=5408, threaded=True)
+    app.run(host="0.0.0.0", port=5408, threaded=True)
