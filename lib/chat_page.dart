@@ -190,7 +190,7 @@ class _ChatPageState extends State<ChatPage> {
                                     ChatController().update();
                                   },
                                   onRightTap: () {
-                                    ChatController().selectedImgs.remove(index);
+                                    ChatController().selectedImgs.removeWhere((e) => e == index);
                                   },
                                 );
                               },

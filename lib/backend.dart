@@ -294,7 +294,7 @@ Future<String> analyseImg(String title, List<String> ipath) async {
     return results.toString();
   } catch (e, stackTrace) {
     Logger.logError('分析图片时出错: $e', stackTrace);
-    return '{"description": "未提供有效图片路径", "tags": []}';
+    return '{"description": "分析图片时出错", "tags": []}';
   }
 }
 
@@ -309,7 +309,7 @@ Future<String> analyseImgOnline(String imagePath) async {
       // 'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
       'POST',
       // Uri.parse("http://0.0.0.0:5408/analyseImg"));
-      Uri.parse("http://172.16.90.86:5408/analyseImg"));
+      Uri.parse("http://172.16.91.233:5408/analyseImg"));
   // 添加图片文件
   var stream = http.ByteStream(imageFile.openRead());
   var length = await imageFile.length();
