@@ -102,10 +102,12 @@ class ChatPageMsg extends StatelessWidget {
                                             padding: const EdgeInsets.all(3),
                                             child: Text(
                                               e,
+                                              
                                               style: const TextStyle(
+                                                
                                                 fontSize: 13,
                                               ),
-                                              textAlign: TextAlign.center,
+                                              textAlign: TextAlign.left,
                                             )),
                                       ),
                                     ),

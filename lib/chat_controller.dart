@@ -702,6 +702,14 @@ class ChatController with ChangeNotifier {
       _imgRecords['$title-imgs'] = ImgRecord(title: '$title-imgs');
       // sendMessage(title, '你好，我是你的智能助理~', true);
       // notifyListeners();
+      generateGuidence(title);
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController createChat 方法出错: $e', stackTrace);
+    }
+  }
+
+  void generateGuidence(String title) {
+    try {
       sendPermission = false;
       sendMessage(title, "正在思考中...", true);
 
@@ -712,7 +720,7 @@ class ChatController with ChangeNotifier {
         notifyListeners();
       });
     } catch (e, stackTrace) {
-      Logger.logError('ChatController createChat 方法出错: $e', stackTrace);
+      Logger.logError('ChatController generateGuidence 方法出错: $e', stackTrace);
     }
   }
 

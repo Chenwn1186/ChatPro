@@ -127,26 +127,31 @@ class ChatImageData {
       builder: (BuildContext context) {
         return AlertDialog(
           title: const Text('图片信息编辑'),
-          content: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // 左边显示图片
-              Align(
-                alignment: Alignment.centerLeft,
-                child: Image.file(
-                  File(imagePath),
-                  width: 300, // 可以根据需要调整图片宽度
-                  // height: 200, // 可以根据需要调整图片高度
-                  fit: BoxFit.cover,
+          content: SizedBox(
+            height: 500,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 左边显示图片
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: Image.file(
+                    File(imagePath),
+                    width: 300, // 可以根据需要调整图片宽度
+                    // height: 200, // 可以根据需要调整图片高度
+                    fit: BoxFit.cover,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              // 右边显示输入框
-              Expanded(
-                child: SingleChildScrollView(
+                const SizedBox(width: 16),
+                // 右边显示输入框
+                SizedBox(
+                  width: 300,
+                  height: 800,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
+                      const Spacer(),
                       TextField(
                         decoration: const InputDecoration(labelText: '时间'),
                         controller: timeController,
@@ -183,11 +188,12 @@ class ChatImageData {
                         decoration: const InputDecoration(labelText: '描述'),
                         controller: describeController,
                       ),
+                      const Spacer(),
                     ],
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
           actions: [
             TextButton(
