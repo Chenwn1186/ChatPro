@@ -19,9 +19,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 # 初始化 OpenAI 客户端
 # API_KEY = "3MFOSXFhX8cuMahAJVKnnR9dh31NsKMqecGTX7zX6hnTfYX03bT0fJT9DqMNshBqu"
 # client = OpenAI(api_key=API_KEY, base_url="https://api.stepfun.com/v1")
+
+#can use:(doubao)
 API_KEY = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY"
 client = OpenAI(api_key=API_KEY, base_url="https://wcode.net/api/gpt/v1")
-
+# API_KEY="sk-XIOIPGBOc3agtjmCB73fE6630089490a92Ea220f35F5F166"
+# client = OpenAI(api_key=API_KEY,base_url="https://vip.yi-zhan.top/v1")
 app = Flask(__name__)
 
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -139,11 +142,14 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
         logging.info("开始调用 OpenAI API...")
         completion = client.chat.completions.create(
             model="Doubao-1.5-vision-pro-32k", messages=messages
+            # model="gpt-4-vision-preview",
+            # model="yi-vision",
+            # messages=messages
         )
         logging.info("成功调用 OpenAI API，获取到结果。")
     except Exception as e:
         logging.error(f"调用 OpenAI API 时出错: {e}")
-        get_money()
+        # get_money()
         return f"调用 OpenAI API 时出错: {e}", 400
     
 
@@ -159,7 +165,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
 
     result = completion.choices[0].message.content
     # logging.info(f"大模型回复结果: {result}")
-    get_money()
+    # get_money()
     return result, 200
 
 
@@ -189,4 +195,5 @@ def get_money():
 
 
 if __name__ == "__main__":
-    app.run(host="172.16.91.233", port=5408, threaded=True)
+    # app.run(host="172.16.91.233", port=5408, threaded=True)
+    app.run(host="0.0.0.0", port=5408, threaded=True)

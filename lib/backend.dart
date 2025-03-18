@@ -38,7 +38,9 @@ class OpenAIUserInteraction {
     return _instance;
   }
 
-  String model = "gpt-4o";
+  // String model = "deepseek-chat";
+  // String model = "gpt-3.5-turbo-0125";
+  String model = "gpt-4o-mini";
 
   // 私有构造函数，防止外部实例化
   OpenAIUserInteraction._internal() {
@@ -49,7 +51,8 @@ class OpenAIUserInteraction {
   void init() {
     // OpenAI.apiKey = "sk-dPrv6dBqbgs5mfgn5Qw264FgXjEO2cQ8n6GWhwav2pLX8hB4";
     // OpenAI.baseUrl = "https://xiaoai.plus";
-    OpenAI.apiKey = "sk-PwAHRaa4EySMczCbBf99Cc35743c40B5B43cEc71762324F2";
+    // OpenAI.apiKey = "sk-PwAHRaa4EySMczCbBf99Cc35743c40B5B43cEc71762324F2";
+    OpenAI.apiKey = "sk-lDIxGqCIvASAAMQGFd954108C8D74d3eB4334601D15203Aa";
     OpenAI.baseUrl = "https://vip.yi-zhan.top";
     // OpenAI.apiKey = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY";
     // OpenAI.baseUrl = "https://wcode.net/api/gpt";
@@ -303,7 +306,10 @@ Future<String> analyseImgOnline(String imagePath) async {
     return '';
   }
   var request = http.MultipartRequest(
-      'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
+      // 'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
+      'POST',
+      // Uri.parse("http://0.0.0.0:5408/analyseImg"));
+      Uri.parse("http://172.16.90.86:5408/analyseImg"));
   // 添加图片文件
   var stream = http.ByteStream(imageFile.openRead());
   var length = await imageFile.length();

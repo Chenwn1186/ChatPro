@@ -215,6 +215,7 @@ def generate_llm_dialog(image_path, metadata):
     try:
         # 创建 OpenAI 客户端实例，使用自定义的 base_url 和 API 密钥
         client = OpenAI(base_url="https://api.stepfun.com/v1", api_key='3MFOSXFhX8cuMahAJVKnnR9dh31NsKMqecGTX7zX6hnTfYX03bT0fJT9DqMNshBqu')
+        # client = OpenAI(base_url="https://vip.yi-zhan.top/v1",api_key="sk-XIOIPGBOc3agtjmCB73fE6630089490a92Ea220f35F5F166")
         # 调用 encode_image 函数将图像文件编码为 Base64 字符串
         image_base64 = encode_image(image_path)
         # 将元数据字典转换为 JSON 字符串，确保非 ASCII 字符能正确显示
@@ -222,6 +223,7 @@ def generate_llm_dialog(image_path, metadata):
         # 调用 OpenAI 的聊天完成接口，向大语言模型发送请求
         response = client.chat.completions.create(
             model="step-1o-vision-32k",
+            # model="gpt-4-vision-preview",
             messages=[
                 {"role": "system", "content": get_system_instruction()},
                 {
