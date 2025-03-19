@@ -561,12 +561,13 @@ class ChatController with ChangeNotifier {
           if (!resend) {
             sendMessage(title, '正在解析图片中...', true);
           }
-          var imgDiscription =
-              json.decode(await analyseImg(title, imgPaths)).toString();
-          var imgDiscriptionRes = '图片解析结果：$imgDiscription';
-          if (imgDiscription.isEmpty) {
-            imgDiscriptionRes = '';
-          }
+          // var imgDiscription =
+          //     json.decode(await analyseImg(title, imgPaths)).toString();
+          // var imgDiscriptionRes = '图片解析结果：$imgDiscription';
+          // if (imgDiscription.isEmpty) {
+          //   imgDiscriptionRes = '';
+          // }
+          var imgDiscriptionRes = ''; //Baseline不读取之前的图片JSON结果。
           var prompt = Prompts().getPrompt('psychological_companion_reply');
           String content = '';
 
