@@ -1,3 +1,39 @@
+// // ChatPageMsg
+// ├── Row (主容器)
+// │   ├── if (left) HeadImg (助手头像)
+// │   │   └── Container (圆形头像)
+// │   │       ├── backgroundColor: headBGColor (从ChatThemes获取)
+// │   │       └── Center
+// │   │           └── Text (imgText: "小助手", color: headTextColor)
+// │   ├── if (!left) SizedBox(width: 58) (右侧对齐占位)
+// │   ├── SizedBox(width: 3) (间距)
+// │   ├── Expanded (消息内容区域)
+// │   │   └── Card (消息卡片)
+// │   │       ├── backgroundColor: bgColor (从ChatThemes获取)
+// │   │       └── Column (垂直排列内容)
+// │   │           ├── Markdown (显示mdMsg)
+// │   │           │   └── Text (解析后的Markdown文本, color: textColor)
+// │   │           ├── if (showRecommendations && recommendations.isNotEmpty) Column
+// │   │           │   └── recommendations.map (推荐项列表)
+// │   │           │       └── Text (每条推荐内容)
+// │   │           └── Row (操作按钮区域)
+// │   │               ├── SizedBox(width: 4) (间距)
+// │   │               ├── if (left) IconButton (点赞)
+// │   │               │   └── Icon (根据thumbUp状态显示点赞图标)
+// │   │               ├── if (left) IconButton (点踩)
+// │   │               │   └── Icon (点踩图标)
+// │   │               ├── if (left) IconButton (重发)
+// │   │               │   └── Icon (重发图标)
+// │   │               └── if (left && recommendations.isNotEmpty) IconButton (展开/收起推荐)
+// │   │                   └── Icon (展开/收起图标，根据showRecommendations切换)
+// │   ├── SizedBox(width: 3) (间距)
+// │   ├── if (!left) HeadImg (用户头像)
+// │   │   └── Container (圆形头像)
+// │   │       ├── backgroundColor: headBGColor (从ChatThemes获取)
+// │   │       └── Center
+// │   │           └── Text (imgText: "用户", color: headTextColor)
+// │   └── if (left) SizedBox(width: 58) (左侧对齐占位)
+
 import 'dart:convert';
 import 'dart:io';
 import 'package:chat_pro/chat_page_msg.dart';
@@ -583,7 +619,7 @@ class ChatController with ChangeNotifier {
             // updateImgMemory(title, updatedMemorys, imgPaths);
             // print('contentMap: $contentMap');
 
-            // notifyListeners();
+            notifyListeners();
             var cont = """{
                 "Adopted Strategy": ${contentMap["Adopted Strategy"]},
                 "Response": ${contentMap["Response"]},
