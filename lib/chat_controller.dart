@@ -403,6 +403,15 @@ class ChatController with ChangeNotifier {
   // 静态私有实例，用于存储单例
   static final ChatController _instance = ChatController._internal();
 
+  ///////////////yuheng add1 for IMGanalysis at first
+  ///// 图片解析状态：路径 -> 是否已解析
+  final Map<String, bool> _imgParseStatus = {};
+  // 待解析队列
+  final List<String> _parseQueue = [];
+  // 是否正在解析
+  bool _isParsing = false;
+
+  ///yuheng add1 end
   // 工厂构造函数，返回单例实例
   factory ChatController() {
     return _instance;
@@ -466,7 +475,32 @@ class ChatController with ChangeNotifier {
     }
   }
 
+  ////////////yuheng modify3 for IMGanalysis at first begin //////////////////////
   // 读取 chats 目录下的所有聊天记录文件
+  // Future<void> readAllChats() async {
+  //   final directory = Directory('chats');
+  //   if (!directory.existsSync()) {
+  //     directory.createSync();
+  //   }
+  //   final files = directory.listSync().whereType<File>();
+  //   for (final file in files) {
+  //     try {
+  //       final fileName = file.uri.pathSegments.last;
+  //       if (fileName.endsWith('-imgs.json')) {
+  //         final title = fileName.replaceAll('.json', '');
+  //         final imgRecord = ImgRecord.fromPath(file.path);
+  //         _imgRecords[title] = imgRecord;
+  //         Logger.log('imgRecord: $imgRecord');
+  //       } else if (fileName.endsWith('.json')) {
+  //         final title = fileName.replaceAll('.json', '');
+  //         final chat = Chat.fromPath(file.path);
+  //         _chats[title] = chat;
+  //       }
+  //     } catch (e, stackTrace) {
+  //       Logger.logError('读取文件 ${file.path} 时出错: $e', stackTrace);
+  //     }
+  //   }
+  // }
   Future<void> readAllChats() async {
     final directory = Directory('chats');
     if (!directory.existsSync()) {
@@ -480,6 +514,15 @@ class ChatController with ChangeNotifier {
           final title = fileName.replaceAll('.json', '');
           final imgRecord = ImgRecord.fromPath(file.path);
           _imgRecords[title] = imgRecord;
+          // 初始化已有图片的解析状态
+          for (var img in imgRecord.imgs) {
+            String jsonPath = img.replaceAll(RegExp(r'\.[^.]+$'), '.json');
+            _imgParseStatus[img] = File(jsonPath).existsSync();
+            if (!_imgParseStatus[img]!) {
+              _parseQueue.add(img);
+            }
+          }
+          _parseImagesSequentially(title);
           Logger.log('imgRecord: $imgRecord');
         } else if (fileName.endsWith('.json')) {
           final title = fileName.replaceAll('.json', '');
@@ -493,6 +536,123 @@ class ChatController with ChangeNotifier {
   }
 
   // 发送消息到指定对话
+
+  // Future<void> sendMessage(String title, String message, bool left,
+  //     {bool resend = false}) async {
+  //   try {
+  //     if (_chats.containsKey(title)) {
+  //       if (!resend) {
+  //         _chats[title]!.addMsg(
+  //           role: left
+  //               ? OpenAIChatMessageRole.assistant
+  //               : OpenAIChatMessageRole.user,
+  //           text: message,
+  //         );
+  //       }
+  //       notifyListeners();
+  //       if (!left) {
+  //         //此时禁止发送信息
+  //         sendPermission = false;
+  //         lastInput = message;
+  //         notifyListeners();
+  //         Logger.log('选择图片：$selectedImgs');
+  //         var imgPaths = selectedImgs.map((e) {
+  //           String path = '';
+  //           if (e >= 0) {
+  //             // path = _imgRecords['$title-imgs']!.imgs[e - 1];
+  //             path = _imgRecords['$title-imgs']!.imgs[e];
+  //           }
+  //           return path;
+  //         }).toList();
+  //         Logger.log('用户输入：$message');
+  //         Logger.log('用户选择的图片：$imgPaths');
+  //         if (!resend) {
+  //           sendMessage(title, '正在解析图片中...', true);
+  //         }
+  //         var imgDiscription =
+  //             json.decode(await analyseImg(title, imgPaths)).toString();
+  //         var imgDiscriptionRes = '图片解析结果：$imgDiscription';
+  //         if (imgDiscription.isEmpty) {
+  //           imgDiscriptionRes = '';
+  //         }
+  //         var prompt = Prompts().getPrompt('psychological_companion_reply');
+  //         String content = '';
+
+  //         _chats[title]!.setPrompt(prompt);
+  //         _chats[title]!.setLastMsg('正在思考中...');
+
+  //         var records = _chats[title]!.getLastMsgModel(20);
+  //         records.removeLast();
+  //         records.removeLast();
+
+  //         var input = resend
+  //             ? "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!"
+  //             : "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!";
+  //         await OpenAIUserInteraction().sendMessageWithStream(input, (event) {
+  //           final firstCompletionChoice = event.choices.first;
+  //           try {
+  //             content += firstCompletionChoice.delta.content?.first?.text ?? '';
+  //             _chats[title]!.setLastMsg(extractResponseContent(content));
+  //           } catch (e) {
+  //             Logger.logError('ChatController 获取llm流式回复 出错: $e');
+  //           }
+  //           notifyListeners();
+  //         }, () {
+  //           Logger.log('llm 回复: $content');
+  //           content = content.replaceAll('```json', '').replaceAll('```', '');
+
+  //           // _chats[title]!.showAllRecords();
+  //           Map<String, dynamic> contentMap = {};
+  //           try {
+  //             contentMap = json.decode(content) as Map<String, dynamic>;
+  //           } catch (e) {
+  //             Logger.logError('ChatController 解析llm回复 出错: $e');
+  //             contentMap = {
+  //               "Adopted Strategy": "无策略",
+  //               "Response": content,
+  //               "updated_image": [],
+  //               "Recommendations": []
+  //             };
+  //             _chats[title]!.setLastMsg(content);
+  //           }
+  //           var rcmStr = List<String>.from(contentMap['Recommendations']!);
+  //           _chats[title]!.setRecommendations(json.encode(rcmStr));
+  //           // 发送消息完成后，允许发送信息
+  //           sendPermission = true;
+  //           notifyListeners();
+  //           List<dynamic> updatedMemorys0 =
+  //               contentMap['updated_image']! as List<dynamic>;
+  //           List<String> updatedMemorys =
+  //               updatedMemorys0.map((e) => e.toString()).toList();
+  //           updateImgMemory(title, updatedMemorys, imgPaths);
+  //           // print('contentMap: $contentMap');
+
+  //           notifyListeners();
+  //           var cont = """{
+  //               "Adopted Strategy": ${contentMap["Adopted Strategy"]},
+  //               "Response": ${contentMap["Response"]},
+  //               "updated_image": ${contentMap["updated_image"]},
+  //               "Recommendations": ${contentMap["Recommendations"]}
+  //             }""";
+  //           _chats[title]!.content.last.content![4] =
+  //               OpenAIChatCompletionChoiceMessageContentItemModel.text(cont);
+
+  //           Logger.log('contentMap: $cont');
+  //           if (chatListScrollController.hasClients) {
+  //             Future.delayed(const Duration(milliseconds: 100), () {
+  //               chatListScrollController
+  //                   .jumpTo(chatListScrollController.position.maxScrollExtent);
+  //             });
+  //           }
+  //         }, records: records);
+  //       }
+
+  //       notifyListeners();
+  //     }
+  //   } catch (e, stackTrace) {
+  //     Logger.logError('ChatController sendMessage 方法出错: $e', stackTrace);
+  //   }
+  // }
   Future<void> sendMessage(String title, String message, bool left,
       {bool resend = false}) async {
     try {
@@ -507,33 +667,41 @@ class ChatController with ChangeNotifier {
         }
         notifyListeners();
         if (!left) {
-          //此时禁止发送信息
           sendPermission = false;
           lastInput = message;
           notifyListeners();
-          Logger.log('选择图片：$selectedImgs');
-          var imgPaths = selectedImgs.map((e) {
-            String path = '';
-            if (e >= 0) {
-              // path = _imgRecords['$title-imgs']!.imgs[e - 1];
-              path = _imgRecords['$title-imgs']!.imgs[e];
-            }
-            return path;
-          }).toList();
+
+          // 获取选中图片路径
+          var imgPaths = selectedImgs
+              .map((e) {
+                String path = '';
+                if (e >= 0 && e < _imgRecords['$title-imgs']!.imgs.length) {
+                  path = _imgRecords['$title-imgs']!.imgs[e];
+                }
+                return path;
+              })
+              .where((path) => path.isNotEmpty)
+              .toList();
+
           Logger.log('用户输入：$message');
           Logger.log('用户选择的图片：$imgPaths');
-          if (!resend) {
-            sendMessage(title, '正在解析图片中...', true);
+
+          // 等待未解析的图片完成
+          String imgDiscriptionRes = '';
+          if (imgPaths.isNotEmpty) {
+            sendMessage(title, '正在等待图片解析...', true);
+            for (var path in imgPaths) {
+              while (!_imgParseStatus[path]!) {
+                await Future.delayed(Duration(milliseconds: 100)); // 轮询等待
+              }
+              // 读取已解析的结果
+              String desc = _loadImgDescription(path);
+              imgDiscriptionRes += desc.isNotEmpty ? '图片解析结果：$desc\n' : '';
+            }
           }
-          var imgDiscription =
-              json.decode(await analyseImg(title, imgPaths)).toString();
-          var imgDiscriptionRes = '图片解析结果：$imgDiscription';
-          if (imgDiscription.isEmpty) {
-            imgDiscriptionRes = '';
-          }
+
           var prompt = Prompts().getPrompt('psychological_companion_reply');
           String content = '';
-
           _chats[title]!.setPrompt(prompt);
           _chats[title]!.setLastMsg('正在思考中...');
 
@@ -542,8 +710,9 @@ class ChatController with ChangeNotifier {
           records.removeLast();
 
           var input = resend
-              ? "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!"
-              : "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!";
+              ? "$imgDiscriptionRes用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!"
+              : "$imgDiscriptionRes用户输入: $message";
+
           await OpenAIUserInteraction().sendMessageWithStream(input, (event) {
             final firstCompletionChoice = event.choices.first;
             try {
@@ -556,8 +725,6 @@ class ChatController with ChangeNotifier {
           }, () {
             Logger.log('llm 回复: $content');
             content = content.replaceAll('```json', '').replaceAll('```', '');
-
-            // _chats[title]!.showAllRecords();
             Map<String, dynamic> contentMap = {};
             try {
               contentMap = json.decode(content) as Map<String, dynamic>;
@@ -573,26 +740,16 @@ class ChatController with ChangeNotifier {
             }
             var rcmStr = List<String>.from(contentMap['Recommendations']!);
             _chats[title]!.setRecommendations(json.encode(rcmStr));
-            // 发送消息完成后，允许发送信息
             sendPermission = true;
             notifyListeners();
-            List<dynamic> updatedMemorys0 =
-                contentMap['updated_image']! as List<dynamic>;
-            List<String> updatedMemorys =
-                updatedMemorys0.map((e) => e.toString()).toList();
-            updateImgMemory(title, updatedMemorys, imgPaths);
-            // print('contentMap: $contentMap');
-
-            notifyListeners();
             var cont = """{
-                "Adopted Strategy": ${contentMap["Adopted Strategy"]},
-                "Response": ${contentMap["Response"]},
-                "updated_image": ${contentMap["updated_image"]},
-                "Recommendations": ${contentMap["Recommendations"]}
-              }""";
+              "Adopted Strategy": ${contentMap["Adopted Strategy"]},
+              "Response": ${contentMap["Response"]},
+              "updated_image": ${contentMap["updated_image"]},
+              "Recommendations": ${contentMap["Recommendations"]}
+            }""";
             _chats[title]!.content.last.content![4] =
                 OpenAIChatCompletionChoiceMessageContentItemModel.text(cont);
-
             Logger.log('contentMap: $cont');
             if (chatListScrollController.hasClients) {
               Future.delayed(const Duration(milliseconds: 100), () {
@@ -602,13 +759,30 @@ class ChatController with ChangeNotifier {
             }
           }, records: records);
         }
-
         notifyListeners();
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController sendMessage 方法出错: $e', stackTrace);
     }
   }
+
+// 读取图片解析结果
+  String _loadImgDescription(String imgPath) {
+    try {
+      String jsonPath = imgPath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
+      File jsonFile = File(jsonPath);
+      if (jsonFile.existsSync()) {
+        Map<String, dynamic> jsonData =
+            json.decode(jsonFile.readAsStringSync());
+        return jsonData['description'] ?? '';
+      }
+      return '';
+    } catch (e, stackTrace) {
+      Logger.logError('读取图片描述 $imgPath 出错: $e', stackTrace);
+      return '';
+    }
+  }
+  /////////yuheng modify3 end ////////////////////////
 
   Future<void> resendMsg() async {
     try {
@@ -681,6 +855,20 @@ class ChatController with ChangeNotifier {
     }
   }
 
+  ///////////////yuheng modify2 for IMGanalysis at first begin////////////////
+  // void addImgs(String title, List<String> paths) {
+  //   try {
+  //     var key = '$title-imgs';
+  //     if (_imgRecords.containsKey(key)) {
+  //       _imgRecords[key]!.addImgs(paths);
+  //     } else {
+  //       _imgRecords[key] = ImgRecord(title: key, imgs: paths);
+  //     }
+  //     notifyListeners();
+  //   } catch (e, stackTrace) {
+  //     Logger.logError('ChatController addImgs 方法出错: $e', stackTrace);
+  //   }
+  // }
   void addImgs(String title, List<String> paths) {
     try {
       var key = '$title-imgs';
@@ -689,12 +877,122 @@ class ChatController with ChangeNotifier {
       } else {
         _imgRecords[key] = ImgRecord(title: key, imgs: paths);
       }
+      // 只对未解析的图片加入队列
+      for (var path in paths) {
+        String jsonPath = path.replaceAll(RegExp(r'\.[^.]+$'), '.json');
+        File jsonFile = File(jsonPath);
+        // 如果JSON文件不存在或内容为空，加入解析队列
+        if (!jsonFile.existsSync() || jsonFile.readAsStringSync().isEmpty) {
+          _imgParseStatus[path] = false;
+          if (!_parseQueue.contains(path)) {
+            _parseQueue.add(path);
+          }
+        } else {
+          _imgParseStatus[path] = true; // 已解析的标记为true
+        }
+      }
+      // 启动解析
+      _parseImagesSequentially(title);
       notifyListeners();
     } catch (e, stackTrace) {
       Logger.logError('ChatController addImgs 方法出错: $e', stackTrace);
     }
   }
+// // 按顺序解析图片
+// Future<void> _parseImagesSequentially(String title) async {
+//   if (_isParsing || _parseQueue.isEmpty) return;
 
+//   _isParsing = true;
+//   while (_parseQueue.isNotEmpty) {
+//     final path = _parseQueue.first;
+//     try {
+//       Logger.log('开始解析图片: $path');
+//       final result = await analyseImg(title, [path]); // 解析单张图片
+//       final description = json.decode(result).toString();
+//       // 更新解析状态
+//       _imgParseStatus[path] = true;
+//       // 可选：将解析结果保存到图片对应的JSON文件
+//       _saveImgDescription(path, description);
+//       Logger.log('图片解析完成: $path -> $description');
+//     } catch (e, stackTrace) {
+//       Logger.logError('解析图片 $path 出错: $e', stackTrace);
+//       _imgParseStatus[path] = true; // 出错也标记为完成，避免阻塞
+//     } finally {
+//       _parseQueue.removeAt(0);
+//       notifyListeners();
+//     }
+//   }
+//   _isParsing = false;
+// }
+  Future<void> _parseImagesSequentially(String title) async {
+    if (_isParsing || _parseQueue.isEmpty) return;
+
+    _isParsing = true;
+    while (_parseQueue.isNotEmpty) {
+      final path = _parseQueue.first;
+      try {
+        // 双重检查，避免重复解析
+        String jsonPath = path.replaceAll(RegExp(r'\.[^.]+$'), '.json');
+        File jsonFile = File(jsonPath);
+        if (jsonFile.existsSync() && jsonFile.readAsStringSync().isNotEmpty) {
+          _imgParseStatus[path] = true;
+          _parseQueue.removeAt(0);
+          continue;
+        }
+
+        Logger.log('开始解析图片: $path');
+        final result = await analyseImg(title, [path]); // 解析单张图片
+        final description = json.decode(result).toString();
+        // 更新解析状态并保存结果
+        _imgParseStatus[path] = true;
+        _saveImgDescription(path, description);
+        Logger.log('图片解析完成: $path -> $description');
+      } catch (e, stackTrace) {
+        Logger.logError('解析图片 $path 出错: $e', stackTrace);
+        _imgParseStatus[path] = true; // 出错也标记为完成，避免阻塞
+      } finally {
+        _parseQueue.removeAt(0);
+        notifyListeners();
+      }
+    }
+    _isParsing = false;
+  }
+
+// // 保存图片解析结果到JSON文件
+// void _saveImgDescription(String imgPath, String description) {
+//   try {
+//     String jsonPath = imgPath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
+//     File jsonFile = File(jsonPath);
+//     Map<String, dynamic> jsonData = {};
+//     if (jsonFile.existsSync()) {
+//       jsonData = json.decode(jsonFile.readAsStringSync());
+//     }
+//     jsonData['description'] = description;
+//     jsonFile.writeAsStringSync(json.encode(jsonData));
+//   } catch (e, stackTrace) {
+//     Logger.logError('保存图片描述 $imgPath 出错: $e', stackTrace);
+//   }
+// }
+// 保存图片解析结果到JSON文件
+  void _saveImgDescription(String imgPath, String description) {
+    try {
+      String jsonPath = imgPath.replaceAll(RegExp(r'\.[^.]+$'), '.json');
+      File jsonFile = File(jsonPath);
+      Map<String, dynamic> jsonData = {};
+      if (jsonFile.existsSync()) {
+        String jsonString = jsonFile.readAsStringSync();
+        if (jsonString.isNotEmpty) {
+          jsonData = json.decode(jsonString);
+        }
+      }
+      jsonData['description'] = description;
+      jsonFile.writeAsStringSync(json.encode(jsonData));
+    } catch (e, stackTrace) {
+      Logger.logError('保存图片描述 $imgPath 出错: $e', stackTrace);
+    }
+  }
+
+  ///////////////yuheng modify2 for IMGanalysis at first end ////////////////
   void createChat(String title) {
     try {
       // _chatRecords[title] = ChatRecord(title: title, messages: []);
