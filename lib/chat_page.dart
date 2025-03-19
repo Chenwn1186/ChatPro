@@ -1,3 +1,50 @@
+// ChatPage：这是一个 StatefulWidget，作为聊天页面的主容器。它接收一个 chatRecord 参数，并在页面中显示聊天记录的标题。
+// AppBar：应用栏，显示聊天记录的标题，包含返回按钮和切换主题的菜单。
+// PuraMultipleRadialGradients：自定义的渐变背景组件，根据当前主题生成多个径向渐变。
+// ImagesBoard：自定义的图片展示板，用于显示聊天中的图片。
+// DraggableImage：可拖动的图片组件，允许用户选择和操作图片。
+// ChatImageData：用于显示图片详细信息的组件（当前代码中注释掉了）。
+// ChatInputField：聊天输入框，允许用户输入消息，包含发送、生成引导、总结和上传图片等功能。
+// TextField：文本输入框，用于输入聊天消息。
+// IconButton：图标按钮，用于触发各种操作，如发送消息、生成引导、总结和上传图片。
+
+// ChatPage (StatefulWidget)
+// ├── AppBar
+// │   ├── IconButton (返回按钮)
+// │   └── PopupMenuButton (切换主题菜单)
+// ├── Stack
+// │   ├── Selector (监听主题变化)
+// │   │   └── PuraMultipleRadialGradients (渐变背景)
+// │   └── Row
+// │       ├── Selector (监听图片列表变化)
+// │       │   └── Stack
+// │       │       ├── ImagesBoard (图片展示板)
+// │       │       ├── Card (底部图片列表容器)
+// │       │       ├── ListView.builder (图片列表)
+// │       │       │   └── DraggableImage (可拖动图片)
+// │       │       └── Selector (监听当前图片索引变化)
+// │       │           └── Card (图片详细信息容器)
+// │       └── Expanded
+// │           ├── Selector (监听消息列表长度变化)
+// │           │   └── ListView.builder (消息列表)
+// │           │       └── Selector (监听消息内容变化)
+// │           │           └── widget.chatRecord.buildWidget (消息组件)
+// │           └── Stack
+// │               └── ChatInputField (聊天输入框)
+// │                   ├── Card
+// │                   │   └── Row
+// │                   │       ├── Expanded
+// │                   │       │   └── ConstrainedBox
+// │                   │       │       └── SingleChildScrollView
+// │                   │       │           └── CallbackShortcuts
+// │                   │       │               └── Selector (监听文本输入控制器变化)
+// │                   │       │                   └── TextField (文本输入框)
+// │                   ├── IconButton (生成引导)
+// │                   ├── IconButton (总结)
+// │                   ├── IconButton (上传图片)
+// │                   └── Selector (监听发送权限变化)
+// │                       └── IconButton (发送消息)
+
 import 'dart:io';
 import 'dart:ui';
 

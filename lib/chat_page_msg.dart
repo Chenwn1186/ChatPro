@@ -1,3 +1,25 @@
+// ChatPageMsg
+// ├── FadeInParent
+// │   └── Row
+// │       ├── if (left) HeadImg
+// │       ├── if (!left) SizedBox(width: 58)
+// │       ├── SizedBox(width: 3)
+// │       ├── Expanded
+// │       │   └── Card
+// │       │       └── Column
+// │       │           ├── Markdown
+// │       │           ├── if (showRecommendations) Column
+// │       │           │   └── ... (recommendations.map(...))
+// │       │           └── Row
+// │       │               ├── SizedBox(width: 4)
+// │       │               ├── if (left) IconButton (thumb up)
+// │       │               ├── if (left) IconButton (thumb down)
+// │       │               ├── if (left) IconButton (resend)
+// │       │               └── if (left && recommendations.isNotEmpty) IconButton (expand/collapse)
+// │       ├── SizedBox(width: 3)
+// │       ├── if (!left) HeadImg
+// │       └── if (left) SizedBox(width: 58)
+
 import 'package:chat_pro/chat_controller.dart';
 import 'package:chat_pro/ui/animations.dart';
 import 'package:chat_pro/ui/theme.dart';
@@ -75,7 +97,8 @@ class ChatPageMsg extends StatelessWidget {
                       code: const TextStyle(color: Colors.white70), // 修改代码文字颜色
                     ),
                   ),
-                  if (showRecommendations)
+                  // if (showRecommendations)
+                  if (false)
                     Column(
                       children: recommendations
                           .map((e) => Padding(
@@ -95,16 +118,16 @@ class ChatPageMsg extends StatelessWidget {
                                       ),
                                       child: InkWell(
                                         onTap: () {
-                                          ChatController().textEditingController.text = e;
+                                          ChatController()
+                                              .textEditingController
+                                              .text = e;
                                           ChatController().update();
                                         },
                                         child: Padding(
                                             padding: const EdgeInsets.all(3),
                                             child: Text(
                                               e,
-                                              
                                               style: const TextStyle(
-                                                
                                                 fontSize: 13,
                                               ),
                                               textAlign: TextAlign.left,
