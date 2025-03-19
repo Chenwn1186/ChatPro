@@ -16,14 +16,14 @@ class ChatThemes {
   String currentTheme = '默认';
   static const Map<String, List<Color>> themes = {
     '默认': [
-      Color.fromARGB(255, 166, 51, 243),
-      Colors.white,
-      Color.fromARGB(205, 239, 222, 255),
-      Color.fromARGB(255, 71, 48, 87),
-      Color.fromARGB(255, 6, 94, 166),
-      Colors.white,
-      Color.fromARGB(205, 214, 233, 248),
-      Color.fromARGB(255, 16, 112, 186),
+      Color.fromARGB(255, 230, 230, 230),
+      Color.fromARGB(255, 38, 38, 38),
+      Color.fromARGB(255, 233, 233, 233),
+      Color.fromARGB(255, 0, 0, 0),
+      Color.fromARGB(255, 212, 233, 250),
+      Color.fromARGB(255, 24, 24, 24),
+      Color.fromARGB(235, 230, 230, 230),
+      Color.fromARGB(255, 43, 43, 43),
     ],
     '蓝色': [
       Color.fromARGB(255, 51, 67, 243),
@@ -45,15 +45,15 @@ class ChatThemes {
       Color.fromARGB(235, 255, 255, 255),
       Color.fromARGB(255, 2, 29, 51),
     ],
-    '白色': [
-      Color.fromARGB(255, 230, 230, 230),
-      Color.fromARGB(255, 38, 38, 38),
-      Color.fromARGB(255, 233, 233, 233),
-      Color.fromARGB(255, 0, 0, 0),
-      Color.fromARGB(255, 212, 233, 250),
-      Color.fromARGB(255, 24, 24, 24),
-      Color.fromARGB(235, 230, 230, 230),
-      Color.fromARGB(255, 43, 43, 43),
+    '粉蓝': [
+      Color.fromARGB(255, 166, 51, 243),
+      Colors.white,
+      Color.fromARGB(205, 239, 222, 255),
+      Color.fromARGB(255, 71, 48, 87),
+      Color.fromARGB(255, 6, 94, 166),
+      Colors.white,
+      Color.fromARGB(205, 214, 233, 248),
+      Color.fromARGB(255, 16, 112, 186),
     ],
     '梅红': [
       Color.fromARGB(255, 190, 87, 87),
