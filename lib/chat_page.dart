@@ -132,7 +132,7 @@ class _ChatPageState extends State<ChatPage> {
                 shouldRebuild: (previous, next) => true,
                 builder: (context, data, child) {
                   var imgs = data.$1;
-              
+
                   return SizedBox(
                     width: width,
                     child: Stack(
@@ -146,32 +146,34 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                         ),
                         Positioned(
-                          bottom: 10,
-                          child: SizedBox(
-                            height: 120,
-                            width: width * 0.65,
-                            child: Card(
-                              elevation: 0,
-                              color: const Color.fromRGBO(205, 205, 205, 0.486),
-                              clipBehavior: Clip.antiAlias,
-                              shape: const ContinuousRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20)),
-                              ),
-                              child: BackdropFilter(filter: 
-                                ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                                child: SizedBox(
-                                  height: 120,
-                                  width: width * 0.65,
+                            bottom: 10,
+                            child: SizedBox(
+                              height: 120,
+                              width: width * 0.65,
+                              child: Card(
+                                elevation: 0,
+                                color:
+                                    const Color.fromRGBO(205, 205, 205, 0.486),
+                                clipBehavior: Clip.antiAlias,
+                                shape: const ContinuousRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20)),
                                 ),
-                            ),
-                          ),
-                        )),
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                  child: SizedBox(
+                                    height: 120,
+                                    width: width * 0.65,
+                                  ),
+                                ),
+                              ),
+                            )),
                         Positioned(
                           bottom: 10,
                           child: SizedBox(
                             height: 120,
-                            width: width* 0.6,
+                            width: width * 0.6,
                             child: ListView.builder(
                               // controller: ScrollController(),
                               clipBehavior: Clip.none,
@@ -190,7 +192,9 @@ class _ChatPageState extends State<ChatPage> {
                                     ChatController().update();
                                   },
                                   onRightTap: () {
-                                    ChatController().selectedImgs.removeWhere((e) => e == index);
+                                    ChatController()
+                                        .selectedImgs
+                                        .removeWhere((e) => e == index);
                                   },
                                 );
                               },
@@ -211,12 +215,12 @@ class _ChatPageState extends State<ChatPage> {
                                   borderRadius:
                                       BorderRadius.all(Radius.circular(20)),
                                 ),
-                                child: ChatImageData(
-                                  currentIndex,
-                                  title: widget.chatRecord.title,
-                                  width: width * 0.3,
-                                  height: 300,
-                                ).buildWidget(context),
+                                // child: ChatImageData(
+                                //   currentIndex,
+                                //   title: widget.chatRecord.title,
+                                //   width: width * 0.3,
+                                //   height: 300,
+                                // ).buildWidget(context),
                               );
                             },
                           ),
@@ -373,10 +377,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
               ),
             ),
-            IconButton(onPressed: (){
-              ChatController().generateGuidence(widget.title);
-            }, icon: const Icon(Icons.wysiwyg_outlined),
-            tooltip: '生成引导',),
+            IconButton(
+              onPressed: () {
+                ChatController().generateGuidence(widget.title);
+              },
+              icon: const Icon(Icons.wysiwyg_outlined),
+              tooltip: '生成引导',
+            ),
             IconButton(
               onPressed: () {
                 ChatController().summarize(widget.title);
@@ -436,4 +443,3 @@ class _ChatInputFieldState extends State<ChatInputField> {
     );
   }
 }
-
