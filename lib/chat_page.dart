@@ -184,13 +184,18 @@ class _ChatPageState extends State<ChatPage> {
                                   width: 100,
                                   height: 100,
                                   imgPath: imgs[index],
+                                  isSelected: ChatController().selectedImgs.contains(index),
                                   onTap: () {
-                                    ChatController().selectedImgs.add(index);
+                                    if (!ChatController().selectedImgs.contains(index)) {
+                                      ChatController().selectedImgs.add(index);
+                                    }
                                     ChatController().currentImgIndex = index;
-                                    ChatController().update();
+                                    // ChatController().update();
+                                    ChatController().checkParsedImgs(widget.chatRecord.title);
                                   },
                                   onRightTap: () {
-                                    ChatController().selectedImgs.remove(index);
+                                    ChatController().selectedImgs.removeWhere((e) => e == index);
+                                    ChatController().checkParsedImgs(widget.chatRecord.title);
                                   },
                                 );
                               },
@@ -373,10 +378,10 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
               ),
             ),
-            // IconButton(onPressed: (){
-            //   ChatController().generateGuidence(widget.title);
-            // }, icon: const Icon(Icons.wysiwyg_outlined),
-            // tooltip: '生成引导',),
+            IconButton(onPressed: (){
+              ChatController().generateGuidence(widget.title);
+            }, icon: const Icon(Icons.wysiwyg_outlined),
+            tooltip: '生成引导',),
             IconButton(
               onPressed: () {
                 ChatController().summarize(widget.title);
@@ -402,7 +407,6 @@ class _ChatInputFieldState extends State<ChatInputField> {
                       imgs.add(newPath);
                     }
                   }
-
                   ChatController().addImgs(widget.title, imgs);
                 }
               },

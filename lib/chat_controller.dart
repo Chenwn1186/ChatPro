@@ -83,14 +83,30 @@ class ImgRecord {
     }
   }
 
-  // void clearRecord() {
-  //   try {
-  //     imgs = [];
-  //     saveRecord();
-  //   } catch (e, stackTrace) {
-  //     Logger.logError('ImgRecord 清空记录出错: $e', stackTrace);
-  //   }
-  // }
+  void checkParsedImgs() {
+    try {
+      ChatController().isParsed = List.filled(imgs.length, false);
+      for (int i = 0; i < imgs.length; i++) {
+        String resultFilePath = imgs[i].replaceAll(RegExp(r'\.[^.]+$'), '.json');
+        if(File(resultFilePath).existsSync()){
+          ChatController().isParsed[i] = true;
+        }
+      }
+      for (var index in ChatController().selectedImgs) {
+        if (ChatController().isParsed[index] == false) {
+          ChatController().sendPermission = false;
+          ChatController().update();
+          Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
+          return;
+        }
+      }
+      Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
+      ChatController().sendPermission = true;
+      ChatController().update();
+    } catch (e, stackTrace) {
+      Logger.logError('ImgRecord 检查解析图片出错: $e', stackTrace);
+    }
+  }
 }
 
 class Chat {
@@ -204,7 +220,7 @@ class Chat {
         saveRecord();
       }
     } catch (e, stackTrace) {
-      Logger.logError('Chat 设置推荐出错: $e', stackTrace);
+      Logger.logError('Chat 设置显示推荐出错: $e', stackTrace);
     }
   }
 
@@ -435,6 +451,8 @@ class ChatController with ChangeNotifier {
 
   ScrollController chatListScrollController = ScrollController();
   final TextEditingController textEditingController = TextEditingController();
+
+  List<bool> isParsed = [];
 
   bool sendPermission = true;
 
@@ -689,9 +707,28 @@ class ChatController with ChangeNotifier {
       } else {
         _imgRecords[key] = ImgRecord(title: key, imgs: paths);
       }
+      analyseImg(title, paths).then(
+        (value) {
+          
+          notifyListeners(); 
+        }
+      );
       notifyListeners();
     } catch (e, stackTrace) {
       Logger.logError('ChatController addImgs 方法出错: $e', stackTrace);
+    }
+  }
+
+  void checkParsedImgs(String title){
+    try {
+      var key = '$title-imgs';
+      if (_imgRecords.containsKey(key)) {
+        _imgRecords[key]!.checkParsedImgs();
+        notifyListeners();
+      }
+    }
+    catch(e, stackTrace){
+      Logger.logError('ChatController checkParsedImgs 方法出错: $e', stackTrace); 
     }
   }
 

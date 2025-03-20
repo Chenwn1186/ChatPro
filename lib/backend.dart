@@ -6,6 +6,7 @@ import 'package:chat_pro/chat_controller.dart';
 import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
+import 'package:simple_canvas/simple_canvas.dart';
 
 // 日志工具类
 class Logger {
@@ -258,7 +259,7 @@ class Prompts {
   }
 }
 
-//todo 图片解析, 分对话建立索引：图片哈希值-解析结果
+
 Future<String> analyseImg(String title, List<String> ipath) async {
   var path = ipath.map((e) => e).toList();
   if (path.isEmpty) {
@@ -287,14 +288,19 @@ Future<String> analyseImg(String title, List<String> ipath) async {
   try {
     Logger.log('开始分析图片，标题: $title, 图片路径: $path');
     for (String imagePath in path) {
-      futureResults.add(analyseImgOnline(imagePath));
+      futureResults.add(analyseImgOnline(imagePath).then(
+        (value) {
+          ChatController().checkParsedImgs(title);
+          return value;
+        }
+      ));
     }
     var fRes = await Future.wait(futureResults);
     results.addAll(fRes);
     return results.toString();
   } catch (e, stackTrace) {
     Logger.logError('分析图片时出错: $e', stackTrace);
-    return '{"description": "未提供有效图片路径", "tags": []}';
+    return '{"description": "分析图片时出错", "tags": []}';
   }
 }
 
@@ -309,7 +315,7 @@ Future<String> analyseImgOnline(String imagePath) async {
       // 'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
       'POST',
       // Uri.parse("http://0.0.0.0:5408/analyseImg"));
-      Uri.parse("http://172.16.90.86:5408/analyseImg"));
+      Uri.parse("http://172.16.91.233:5408/analyseImg"));
   // 添加图片文件
   var stream = http.ByteStream(imageFile.openRead());
   var length = await imageFile.length();
@@ -331,8 +337,11 @@ Future<String> analyseImgOnline(String imagePath) async {
     resultFile.writeAsStringSync(bodyMap['result'],
         mode: FileMode.write,
         encoding: Encoding.getByName('utf-8')!); // 以 UTF-8 编码写入文件
+    ImagesBoardManager().addLabels(imagePath);
     return response.body;
   }
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
   return response.body;
 }
+
+

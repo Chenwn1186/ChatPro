@@ -24,8 +24,10 @@ class ChatList extends StatelessWidget {
                   onTap: () {
                     ChatController().selectedImgs = [];
                     ChatController().chatListScrollController.dispose();
-                    ChatController().chatListScrollController = ScrollController();
+                    ChatController().chatListScrollController =
+                        ScrollController();
                     ChatController().currentTitle = title;
+                    ChatController().isParsed = [];
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => ChatPage(
                         chatRecord: ChatController().getChat(title),
@@ -45,7 +47,8 @@ class ChatList extends StatelessWidget {
           floatingActionButton: FloatingActionButton(
             child: const Icon(Icons.add),
             onPressed: () async {
-              final TextEditingController titleController = TextEditingController();
+              final TextEditingController titleController =
+                  TextEditingController();
               await showDialog(
                 context: context,
                 builder: (context) {
@@ -62,7 +65,6 @@ class ChatList extends StatelessWidget {
                             titleController.clear();
                           } else {
                             ChatController().createChat(title);
-                            
                           }
                           Navigator.of(context).pop();
                         },
