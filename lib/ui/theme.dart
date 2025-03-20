@@ -13,9 +13,9 @@ class ChatThemes {
   // 私有构造函数，防止外部实例化
   ChatThemes._internal();
 
-  String currentTheme = '默认';
+  String currentTheme = '白色';
   static const Map<String, List<Color>> themes = {
-    '默认': [
+    '紫色': [
       Color.fromARGB(255, 166, 51, 243),
       Colors.white,
       Color.fromARGB(205, 239, 222, 255),
