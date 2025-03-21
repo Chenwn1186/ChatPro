@@ -263,10 +263,10 @@ class Chat {
     try {
       if(content.length - 1 - index < 0) return '';
       var lastMsgs = content[content.length - 1 - index];
-      if(lastMsgs.role == OpenAIChatMessageRole.user) {
-        return lastMsgs.content![0].text!;
-      }
-      return lastMsgs.content![4].text!;
+      // if(lastMsgs.role == OpenAIChatMessageRole.user) {
+      //   return lastMsgs.content![0].text!;
+      // }
+      return lastMsgs.content![0].text!;
     } catch (e, stackTrace) {
       Logger.logError('Chat 获取最后消息出错: $e', stackTrace);
       return '';
