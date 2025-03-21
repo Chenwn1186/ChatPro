@@ -221,7 +221,7 @@ class Chat {
         saveRecord();
       }
     } catch (e, stackTrace) {
-      Logger.logError('Chat 设置显示推荐出错: $e', stackTrace);
+      // Logger.logError('Chat 设置显示推荐出错: $e', stackTrace);
     }
   }
 
@@ -277,16 +277,16 @@ class Chat {
     try {
       var startIndex = content.length > count ? content.length - count : 0;
       var lastMsgs = content.sublist(startIndex);
-      // var prompt = OpenAIChatCompletionChoiceMessageModel(
-      //   role: OpenAIChatMessageRole.system,
-      //   content: [
-      //     OpenAIChatCompletionChoiceMessageContentItemModel.text(
-      //       this.prompt.content![0].text!,
-      //     ),
-      //   ],
-      // );
-      // var res = [prompt];
-      List<OpenAIChatCompletionChoiceMessageModel> res = [];
+      var prompt = OpenAIChatCompletionChoiceMessageModel(
+        role: OpenAIChatMessageRole.system,
+        content: [
+          OpenAIChatCompletionChoiceMessageContentItemModel.text(
+            this.prompt.content![0].text!,
+          ),
+        ],
+      );
+      var res = [prompt];
+      // List<OpenAIChatCompletionChoiceMessageModel> res = [];
       res.addAll(lastMsgs);
       res = res.map((e) {
         if (e.role == OpenAIChatMessageRole.assistant) {
@@ -554,10 +554,10 @@ class ChatController with ChangeNotifier {
           if (imgDiscription.isEmpty) {
             imgDiscriptionRes = '';
           }
-          // var prompt = Prompts().getPrompt('psychological_companion_reply');
+          var prompt = Prompts().getPrompt('psychological_companion_reply');
           String content = '';
 
-          // _chats[title]!.setPrompt(prompt);
+          _chats[title]!.setPrompt(prompt);
           _chats[title]!.setLastMsg('正在思考中...');
 
           var records = _chats[title]!.getLastMsgModel(20);

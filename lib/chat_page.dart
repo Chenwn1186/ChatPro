@@ -1,10 +1,10 @@
-import 'dart:io';
+// import 'dart:io';
 import 'dart:ui';
 
 import 'package:chat_pro/chat_controller.dart';
 import 'package:chat_pro/ui/pura_multiple_radial_gradients.dart';
 import 'package:chat_pro/ui/theme.dart';
-import 'package:chat_pro/util/chat_image_data.dart';
+// import 'package:chat_pro/util/chat_image_data.dart';
 import 'package:chat_pro/util/file_utils.dart';
 import 'package:dart_openai/dart_openai.dart';
 // import 'package:chat_pro/chat_page_msg.dart';
