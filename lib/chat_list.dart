@@ -2,6 +2,7 @@ import 'package:chat_pro/chat_controller.dart';
 import 'package:chat_pro/chat_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:simple_canvas/simple_canvas.dart';
 
 class ChatList extends StatelessWidget {
   const ChatList({super.key});
@@ -28,6 +29,7 @@ class ChatList extends StatelessWidget {
                         ScrollController();
                     ChatController().currentTitle = title;
                     ChatController().isParsed = [];
+                    ImagesBoardManager().autoAddLabels = false;
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => ChatPage(
                         chatRecord: ChatController().getChat(title),

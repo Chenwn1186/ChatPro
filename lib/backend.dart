@@ -290,7 +290,7 @@ Future<String> analyseImg(String title, List<String> ipath) async {
     for (String imagePath in path) {
       futureResults.add(analyseImgOnline(imagePath).then(
         (value) {
-          ChatController().checkParsedImgs(title);
+          // ChatController().checkParsedImgs(title);
           return value;
         }
       ));
@@ -337,7 +337,7 @@ Future<String> analyseImgOnline(String imagePath) async {
     resultFile.writeAsStringSync(bodyMap['result'],
         mode: FileMode.write,
         encoding: Encoding.getByName('utf-8')!); // 以 UTF-8 编码写入文件
-    ImagesBoardManager().addLabels(imagePath);
+    // ImagesBoardManager().addLabels(imagePath);
     return response.body;
   }
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');

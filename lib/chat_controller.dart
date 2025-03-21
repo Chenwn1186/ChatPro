@@ -83,30 +83,30 @@ class ImgRecord {
     }
   }
 
-  void checkParsedImgs() {
-    try {
-      ChatController().isParsed = List.filled(imgs.length, false);
-      for (int i = 0; i < imgs.length; i++) {
-        String resultFilePath = imgs[i].replaceAll(RegExp(r'\.[^.]+$'), '.json');
-        if(File(resultFilePath).existsSync()){
-          ChatController().isParsed[i] = true;
-        }
-      }
-      for (var index in ChatController().selectedImgs) {
-        if (ChatController().isParsed[index] == false) {
-          ChatController().sendPermission = false;
-          ChatController().update();
-          Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
-          return;
-        }
-      }
-      Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
-      ChatController().sendPermission = true;
-      ChatController().update();
-    } catch (e, stackTrace) {
-      Logger.logError('ImgRecord 检查解析图片出错: $e', stackTrace);
-    }
-  }
+  // void checkParsedImgs() {
+  //   try {
+  //     ChatController().isParsed = List.filled(imgs.length, false);
+  //     for (int i = 0; i < imgs.length; i++) {
+  //       String resultFilePath = imgs[i].replaceAll(RegExp(r'\.[^.]+$'), '.json');
+  //       if(File(resultFilePath).existsSync()){
+  //         ChatController().isParsed[i] = true;
+  //       }
+  //     }
+  //     for (var index in ChatController().selectedImgs) {
+  //       if (ChatController().isParsed[index] == false) {
+  //         ChatController().sendPermission = false;
+  //         ChatController().update();
+  //         Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
+  //         return;
+  //       }
+  //     }
+  //     Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
+  //     ChatController().sendPermission = true;
+  //     ChatController().update();
+  //   } catch (e, stackTrace) {
+  //     Logger.logError('ImgRecord 检查解析图片出错: $e', stackTrace);
+  //   }
+  // }
 }
 
 class Chat {
@@ -126,6 +126,7 @@ class Chat {
         content.add(OpenAIChatCompletionChoiceMessageModel.fromMap(json));
       }
       title = fileName;
+      // setPrompt();
     } catch (e, stackTrace) {
       Logger.logError('Chat 从路径创建实例出错: $e', stackTrace);
     }
@@ -273,15 +274,16 @@ class Chat {
     try {
       var startIndex = content.length > count ? content.length - count : 0;
       var lastMsgs = content.sublist(startIndex);
-      var prompt = OpenAIChatCompletionChoiceMessageModel(
-        role: OpenAIChatMessageRole.system,
-        content: [
-          OpenAIChatCompletionChoiceMessageContentItemModel.text(
-            this.prompt.content![0].text!,
-          ),
-        ],
-      );
-      var res = [prompt];
+      // var prompt = OpenAIChatCompletionChoiceMessageModel(
+      //   role: OpenAIChatMessageRole.system,
+      //   content: [
+      //     OpenAIChatCompletionChoiceMessageContentItemModel.text(
+      //       this.prompt.content![0].text!,
+      //     ),
+      //   ],
+      // );
+      // var res = [prompt];
+      List<OpenAIChatCompletionChoiceMessageModel> res = [];
       res.addAll(lastMsgs);
       res = res.map((e) {
         if (e.role == OpenAIChatMessageRole.assistant) {
@@ -549,69 +551,68 @@ class ChatController with ChangeNotifier {
           if (imgDiscription.isEmpty) {
             imgDiscriptionRes = '';
           }
-          var prompt = Prompts().getPrompt('psychological_companion_reply');
+          // var prompt = Prompts().getPrompt('psychological_companion_reply');
           String content = '';
 
-          _chats[title]!.setPrompt(prompt);
+          // _chats[title]!.setPrompt(prompt);
           _chats[title]!.setLastMsg('正在思考中...');
 
           var records = _chats[title]!.getLastMsgModel(20);
           records.removeLast();
           records.removeLast();
 
-          var input = resend
-              ? "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!"
-              : "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!";
+          var input = "$imgDiscriptionRes, \n用户输入: $message";
           await OpenAIUserInteraction().sendMessageWithStream(input, (event) {
             final firstCompletionChoice = event.choices.first;
             try {
               content += firstCompletionChoice.delta.content?.first?.text ?? '';
-              _chats[title]!.setLastMsg(extractResponseContent(content));
+              // _chats[title]!.setLastMsg(extractResponseContent(content));
+              _chats[title]!.setLastMsg(content);
             } catch (e) {
               Logger.logError('ChatController 获取llm流式回复 出错: $e');
             }
             notifyListeners();
           }, () {
             Logger.log('llm 回复: $content');
-            content = content.replaceAll('```json', '').replaceAll('```', '');
+            // content = content.replaceAll('```json', '').replaceAll('```', '');
 
             // _chats[title]!.showAllRecords();
-            Map<String, dynamic> contentMap = {};
-            try {
-              contentMap = json.decode(content) as Map<String, dynamic>;
-            } catch (e) {
-              Logger.logError('ChatController 解析llm回复 出错: $e');
-              contentMap = {
-                "Adopted Strategy": "无策略",
-                "Response": content,
-                "updated_image": [],
-                "Recommendations": []
-              };
-              _chats[title]!.setLastMsg(content);
-            }
-            var rcmStr = List<String>.from(contentMap['Recommendations']!);
-            _chats[title]!.setRecommendations(json.encode(rcmStr));
+            // Map<String, dynamic> contentMap = {};
+            // try {
+            //   contentMap = json.decode(content) as Map<String, dynamic>;
+            // } catch (e) {
+            //   Logger.logError('ChatController 解析llm回复 出错: $e');
+            //   contentMap = {
+            //     "Adopted Strategy": "无策略",
+            //     "Response": content,
+            //     "updated_image": [],
+            //     "Recommendations": []
+            //   };
+              // _chats[title]!.setLastMsg(content);
+            // }
+            // var rcmStr = List<String>.from(contentMap['Recommendations']!);
+            // _chats[title]!.setRecommendations(json.encode(rcmStr));
             // 发送消息完成后，允许发送信息
             sendPermission = true;
             notifyListeners();
-            List<dynamic> updatedMemorys0 =
-                contentMap['updated_image']! as List<dynamic>;
-            List<String> updatedMemorys =
-                updatedMemorys0.map((e) => e.toString()).toList();
-            updateImgMemory(title, updatedMemorys, imgPaths);
+            // List<dynamic> updatedMemorys0 =
+            //     contentMap['updated_image']! as List<dynamic>;
+            // List<String> updatedMemorys =
+            //     updatedMemorys0.map((e) => e.toString()).toList();
+            // updateImgMemory(title, updatedMemorys, imgPaths);
             // print('contentMap: $contentMap');
 
-            notifyListeners();
-            var cont = """{
-                "Adopted Strategy": ${contentMap["Adopted Strategy"]},
-                "Response": ${contentMap["Response"]},
-                "updated_image": ${contentMap["updated_image"]},
-                "Recommendations": ${contentMap["Recommendations"]}
-              }""";
+            // notifyListeners();
+            // var cont = """{
+            //     "Adopted Strategy": ${contentMap["Adopted Strategy"]},
+            //     "Response": ${contentMap["Response"]},
+            //     "updated_image": ${contentMap["updated_image"]},
+            //     "Recommendations": ${contentMap["Recommendations"]}
+            //   }""";
             _chats[title]!.content.last.content![4] =
-                OpenAIChatCompletionChoiceMessageContentItemModel.text(cont);
+                OpenAIChatCompletionChoiceMessageContentItemModel.text(content);
 
-            Logger.log('contentMap: $cont');
+            // Logger.log('contentMap: $cont');
             if (chatListScrollController.hasClients) {
               Future.delayed(const Duration(milliseconds: 100), () {
                 chatListScrollController
@@ -707,30 +708,30 @@ class ChatController with ChangeNotifier {
       } else {
         _imgRecords[key] = ImgRecord(title: key, imgs: paths);
       }
-      analyseImg(title, paths).then(
-        (value) {
+      // analyseImg(title, paths).then(
+      //   (value) {
           
-          notifyListeners(); 
-        }
-      );
+      //     notifyListeners(); 
+      //   }
+      // );
       notifyListeners();
     } catch (e, stackTrace) {
       Logger.logError('ChatController addImgs 方法出错: $e', stackTrace);
     }
   }
 
-  void checkParsedImgs(String title){
-    try {
-      var key = '$title-imgs';
-      if (_imgRecords.containsKey(key)) {
-        _imgRecords[key]!.checkParsedImgs();
-        notifyListeners();
-      }
-    }
-    catch(e, stackTrace){
-      Logger.logError('ChatController checkParsedImgs 方法出错: $e', stackTrace); 
-    }
-  }
+  // void checkParsedImgs(String title){
+  //   try {
+  //     var key = '$title-imgs';
+  //     if (_imgRecords.containsKey(key)) {
+  //       _imgRecords[key]!.checkParsedImgs();
+  //       notifyListeners();
+  //     }
+  //   }
+  //   catch(e, stackTrace){
+  //     Logger.logError('ChatController checkParsedImgs 方法出错: $e', stackTrace); 
+  //   }
+  // }
 
   void createChat(String title) {
     try {
@@ -738,8 +739,8 @@ class ChatController with ChangeNotifier {
       _chats[title] = Chat(title: title, content: []);
       _imgRecords['$title-imgs'] = ImgRecord(title: '$title-imgs');
       // sendMessage(title, '你好，我是你的智能助理~', true);
-      // notifyListeners();
-      generateGuidence(title);
+      notifyListeners();
+      // generateGuidence(title);
     } catch (e, stackTrace) {
       Logger.logError('ChatController createChat 方法出错: $e', stackTrace);
     }
