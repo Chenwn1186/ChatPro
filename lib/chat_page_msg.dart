@@ -153,7 +153,7 @@ class ChatPageMsg extends StatelessWidget {
                               color: ChatThemes().getColors()[3],
                               size: 20,
                             )),
-                      if (left)
+                      if (left && (ChatController().getChat(ChatController().currentTitle).content.length == index + 1))
                         IconButton(
                             onPressed: () {
                               ChatController().resendMsg();
