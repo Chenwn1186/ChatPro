@@ -38,45 +38,47 @@ class ChatList extends StatelessWidget {
                 ),
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        title,
-                      ),
-                      Card(
-                        elevation: 0,
-                        color: ChatThemes().getColors()[6],
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            userMsg,
-                            maxLines: 7,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: ChatThemes().getColors()[7],
-                              fontSize: 14,
+                  title: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                        ),
+                        Card(
+                          elevation: 0,
+                          color: ChatThemes().getColors()[6],
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              userMsg,
+                              maxLines: 7,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: ChatThemes().getColors()[7],
+                                fontSize: 14,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      Card(
-                        elevation: 0,
-                        color: ChatThemes().getColors()[2],
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Text(
-                            lastMsg,
-                            maxLines: 7,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: ChatThemes().getColors()[3],
-                              fontSize: 14,
+                        Card(
+                          elevation: 0,
+                          color: ChatThemes().getColors()[2],
+                          child: Padding(
+                            padding: const EdgeInsets.all(8.0),
+                            child: Text(
+                              lastMsg,
+                              maxLines: 7,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                color: ChatThemes().getColors()[3],
+                                fontSize: 14,
+                              ),
                             ),
                           ),
-                        ),
-                      )
-                    ],
+                        )
+                      ],
+                    ),
                   ),
                   onTap: () {
                     ChatController().selectedImgs = [];
