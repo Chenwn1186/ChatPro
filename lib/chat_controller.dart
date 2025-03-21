@@ -258,11 +258,14 @@ class Chat {
     }
   }
 
-  String getLastMsg(int count) {
+  String getLastMsg({int index = 0}) {
     try {
-      var startIndex = content.length > count ? content.length - count : 0;
-      var lastMsgs = content.sublist(startIndex);
-      return lastMsgs.map((e) => e.toMap().toString()).toList().toString();
+      if(content.length - 1 - index < 0) return '';
+      var lastMsgs = content[content.length - 1 - index];
+      if(lastMsgs.role == OpenAIChatMessageRole.user) {
+        return lastMsgs.content![0].text!;
+      }
+      return lastMsgs.content![4].text!;
     } catch (e, stackTrace) {
       Logger.logError('Chat 获取最后消息出错: $e', stackTrace);
       return '';
