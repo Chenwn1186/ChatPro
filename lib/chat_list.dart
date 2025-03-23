@@ -87,7 +87,7 @@ class ChatList extends StatelessWidget {
                         ScrollController();
                     ChatController().currentTitle = title;
                     ChatController().isParsed = [];
-                    ImagesBoardManager().autoAddLabels = false;
+                    ImagesBoardManager().autoAddLabels = true;
                     Navigator.of(context).push(MaterialPageRoute(
                       builder: (_) => ChatPage(
                         chatRecord: ChatController().getChat(title),
