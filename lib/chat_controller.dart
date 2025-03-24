@@ -440,6 +440,7 @@ class ChatController with ChangeNotifier {
 
   // 存储所有对话记录，key 是对话标题
   final Map<String, ImgRecord> _imgRecords = {};
+  List<int> finalSelectedImgs = [];
   final Map<String, Chat> _chats = {};
   List<int> selectedImgs = [];
   int currentImgIndex = -1;
@@ -806,7 +807,7 @@ class ChatController with ChangeNotifier {
   Future<void> summarize(String title) async {
     try {
       if (_chats.containsKey(title)) {
-        var imgDiscription = getImgAnalasis(title);
+        var imgDiscription = await getImgAnalasis(title);
 
         var prompt = Prompts().getPrompt("summary_prompt");
         String content = '';
@@ -855,20 +856,21 @@ class ChatController with ChangeNotifier {
     }
   }
 
-  String getImgAnalasis(String title) {
+  Future<String> getImgAnalasis(String title) async {
     try {
-      var path = 'chats/$title';
-      var result = '';
-      var directory = Directory(path);
-      if (directory.existsSync()) {
-        var files = directory.listSync();
-        for (var file in files) {
-          if (file is File && file.path.endsWith('.json')) {
-            result += file.readAsStringSync();
-          }
-        }
-      }
-      return result;
+      // var path = 'chats/$title';
+      // var result = '';
+      var imgPaths = finalSelectedImgs.map((e) {
+            String path = '';
+            if (e >= 0) {
+              // path = _imgRecords['$title-imgs']!.imgs[e - 1];
+              path = _imgRecords['$title-imgs']!.imgs[e];
+            }
+            return path;
+          }).toList();
+      var imgDiscription =
+              json.decode(await analyseImg(title, imgPaths)).toString();
+      return imgDiscription;
     } catch (e, stackTrace) {
       Logger.logError('ChatController getImgAnalasis 方法出错: $e', stackTrace);
       return '';

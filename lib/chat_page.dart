@@ -188,6 +188,7 @@ class _ChatPageState extends State<ChatPage> {
                                   onTap: () {
                                     if (!ChatController().selectedImgs.contains(index)) {
                                       ChatController().selectedImgs.add(index);
+                                      ChatController().finalSelectedImgs.add(index);
                                     }
                                     ChatController().currentImgIndex = index;
                                     // ChatController().update();
