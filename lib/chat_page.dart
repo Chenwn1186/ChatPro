@@ -189,6 +189,9 @@ class _ChatPageState extends State<ChatPage> {
                                     if (!ChatController().selectedImgs.contains(index)) {
                                       ChatController().selectedImgs.add(index);
                                     }
+                                    if (!ChatController().finalSelectedImgs.contains(index)) {
+                                      ChatController().finalSelectedImgs.add(index);
+                                    }
                                     ChatController().currentImgIndex = index;
                                     ChatController().update();
                                     // ChatController().checkParsedImgs(widget.chatRecord.title);

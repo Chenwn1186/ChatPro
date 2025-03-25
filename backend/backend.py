@@ -149,7 +149,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
         logging.info("成功调用 OpenAI API，获取到结果。")
     except Exception as e:
         logging.error(f"调用 OpenAI API 时出错: {e}")
-        # get_money()
+        get_money()
         return f"调用 OpenAI API 时出错: {e}", 400
     
 
@@ -165,7 +165,7 @@ def get_openai_response(image_url, yolo_results, metadata, prompt):
 
     result = completion.choices[0].message.content
     # logging.info(f"大模型回复结果: {result}")
-    # get_money()
+    get_money()
     return result, 200
 
 

@@ -273,7 +273,7 @@ class Chat {
     }
   }
 
-  List<OpenAIChatCompletionChoiceMessageModel> getLastMsgModel(int count) {
+  List<OpenAIChatCompletionChoiceMessageModel> getLastMsgModel(int count, {bool sum = false}) {
     try {
       var startIndex = content.length > count ? content.length - count : 0;
       var lastMsgs = content.sublist(startIndex);
@@ -291,6 +291,7 @@ class Chat {
       res = res.map((e) {
         if (e.role == OpenAIChatMessageRole.assistant) {
           var cont = e.content![4];
+          if(sum)cont = e.content![0];
           OpenAIChatCompletionChoiceMessageModel newMsg =
               OpenAIChatCompletionChoiceMessageModel(
                   role: e.role, content: [cont]);
@@ -809,11 +810,13 @@ class ChatController with ChangeNotifier {
     try {
       if (_chats.containsKey(title)) {
         var imgDiscription = await getImgAnalasis(title);
-
-        var prompt = Prompts().getPrompt("summary_prompt");
         String content = '';
         sendMessage(title, '正在总结中...', true);
+        var prompt = Prompts().getPrompt("summary_prompt");
         _chats[title]!.setPrompt(prompt);
+        var records = _chats[title]!.getLastMsgModel(20, sum: true);
+          records.removeLast();
+        
         OpenAIUserInteraction().sendMessageWithStream('图片解析结果：$imgDiscription',
             (event) {
           final firstCompletionChoice = event.choices.first;
@@ -822,11 +825,19 @@ class ChatController with ChangeNotifier {
           notifyListeners();
         }, () {
           Logger.log('llm 总结: $content');
-        }, records: _chats[title]!.getLastMsgModel(20));
+          var cont = """{
+                "Adopted Strategy": "总结以往所有内容"},
+                "Response": $content,
+                "updated_image": [],
+                "Recommendations": []}
+              }""";
+            _chats[title]!.content.last.content![4] =
+                OpenAIChatCompletionChoiceMessageContentItemModel.text(cont);
+        }, records: records);
 
         notifyListeners();
 
-        _chats[title]!.showAllRecords();
+        // _chats[title]!.showAllRecords();
       }
     } catch (e, stackTrace) {
       Logger.logError('ChatController summarize 方法出错: $e', stackTrace);
