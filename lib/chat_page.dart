@@ -132,7 +132,7 @@ class _ChatPageState extends State<ChatPage> {
                 shouldRebuild: (previous, next) => true,
                 builder: (context, data, child) {
                   var imgs = data.$1;
-              
+
                   return SizedBox(
                     width: width,
                     child: Stack(
@@ -146,32 +146,34 @@ class _ChatPageState extends State<ChatPage> {
                           ),
                         ),
                         Positioned(
-                          bottom: 10,
-                          child: SizedBox(
-                            height: 120,
-                            width: width * 0.65,
-                            child: Card(
-                              elevation: 0,
-                              color: const Color.fromRGBO(205, 205, 205, 0.486),
-                              clipBehavior: Clip.antiAlias,
-                              shape: const ContinuousRectangleBorder(
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(20)),
-                              ),
-                              child: BackdropFilter(filter: 
-                                ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                                child: SizedBox(
-                                  height: 120,
-                                  width: width * 0.65,
+                            bottom: 10,
+                            child: SizedBox(
+                              height: 120,
+                              width: width * 0.65,
+                              child: Card(
+                                elevation: 0,
+                                color:
+                                    const Color.fromRGBO(205, 205, 205, 0.486),
+                                clipBehavior: Clip.antiAlias,
+                                shape: const ContinuousRectangleBorder(
+                                  borderRadius:
+                                      BorderRadius.all(Radius.circular(20)),
                                 ),
-                            ),
-                          ),
-                        )),
+                                child: BackdropFilter(
+                                  filter:
+                                      ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+                                  child: SizedBox(
+                                    height: 120,
+                                    width: width * 0.65,
+                                  ),
+                                ),
+                              ),
+                            )),
                         Positioned(
                           bottom: 10,
                           child: SizedBox(
                             height: 120,
-                            width: width* 0.6,
+                            width: width * 0.6,
                             child: ListView.builder(
                               // controller: ScrollController(),
                               clipBehavior: Clip.none,
@@ -184,19 +186,29 @@ class _ChatPageState extends State<ChatPage> {
                                   width: 100,
                                   height: 100,
                                   imgPath: imgs[index],
-                                  isSelected: ChatController().selectedImgs.contains(index),
+                                  isSelected: ChatController()
+                                      .selectedImgs
+                                      .contains(index),
                                   onTap: () {
-                                    if (!ChatController().selectedImgs.contains(index)) {
+                                    if (!ChatController()
+                                        .selectedImgs
+                                        .contains(index)) {
                                       ChatController().selectedImgs.add(index);
-                                      ChatController().finalSelectedImgs.add(index);
+                                      ChatController()
+                                          .finalSelectedImgs
+                                          .add(index);
                                     }
                                     ChatController().currentImgIndex = index;
                                     // ChatController().update();
-                                    ChatController().checkParsedImgs(widget.chatRecord.title);
+                                    ChatController().checkParsedImgs(
+                                        widget.chatRecord.title);
                                   },
                                   onRightTap: () {
-                                    ChatController().selectedImgs.removeWhere((e) => e == index);
-                                    ChatController().checkParsedImgs(widget.chatRecord.title);
+                                    ChatController()
+                                        .selectedImgs
+                                        .removeWhere((e) => e == index);
+                                    ChatController().checkParsedImgs(
+                                        widget.chatRecord.title);
                                   },
                                 );
                               },
@@ -226,7 +238,84 @@ class _ChatPageState extends State<ChatPage> {
                               );
                             },
                           ),
-                        )
+                        ),
+                        // Positioned(
+                        //   left: 10,
+                        //   top: 50,
+                        //   child: Card(
+                        //     elevation: 4,
+                        //     shape: const RoundedRectangleBorder(
+                        //       borderRadius:
+                        //           BorderRadius.all(Radius.circular(12)),
+                        //     ),
+                        //     child: Padding(
+                        //       padding: const EdgeInsets.all(8),
+                        //       child: Column(
+                        //         children: [
+                        //           IconButton(
+                        //             icon: Icon(Icons.pan_tool),
+                        //             onPressed: () {},
+                        //             tooltip: '平移工具',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.crop_square),
+                        //             onPressed: () {},
+                        //             tooltip: '矩形工具',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.line_axis),
+                        //             onPressed: () {},
+                        //             tooltip: '直线工具',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.text_fields),
+                        //             onPressed: () {},
+                        //             tooltip: '文本工具',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.clear),
+                        //             onPressed: () {},
+                        //             tooltip: '清除',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.color_lens),
+                        //             onPressed: () {},
+                        //             tooltip: '颜色选择',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.label),
+                        //             onPressed: () {},
+                        //             tooltip: '标签',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.select_all),
+                        //             onPressed: () {},
+                        //             tooltip: '框选',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.undo),
+                        //             onPressed: () {},
+                        //             tooltip: '撤销',
+                        //           ),
+                        //           SizedBox(height: 10),
+                        //           IconButton(
+                        //             icon: Icon(Icons.redo),
+                        //             onPressed: () {},
+                        //             tooltip: '重做',
+                        //           ),
+                        //         ],
+                        //       ),
+                        //     ),
+                        //   ),
+                        // ),
                       ],
                     ),
                   );
@@ -379,10 +468,13 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ),
               ),
             ),
-            IconButton(onPressed: (){
-              ChatController().generateGuidence(widget.title);
-            }, icon: const Icon(Icons.wysiwyg_outlined),
-            tooltip: '生成引导',),
+            IconButton(
+              onPressed: () {
+                ChatController().generateGuidence(widget.title);
+              },
+              icon: const Icon(Icons.wysiwyg_outlined),
+              tooltip: '生成引导',
+            ),
             IconButton(
               onPressed: () {
                 ChatController().summarize(widget.title);
@@ -441,4 +533,3 @@ class _ChatInputFieldState extends State<ChatInputField> {
     );
   }
 }
-
