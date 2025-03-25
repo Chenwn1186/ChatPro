@@ -194,6 +194,10 @@ class _ChatPageState extends State<ChatPage> {
                                         .selectedImgs
                                         .contains(index)) {
                                       ChatController().selectedImgs.add(index);
+                                    }
+                                    if (!ChatController()
+                                        .finalSelectedImgs
+                                        .contains(index)) {
                                       ChatController()
                                           .finalSelectedImgs
                                           .add(index);
