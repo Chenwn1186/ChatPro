@@ -42,6 +42,7 @@ class OpenAIUserInteraction {
   // String model = "deepseek-chat";
   // String model = "gpt-3.5-turbo-0125";
   String model = "gpt-4o-mini";
+  List<String> models = ['gpt-4o-mini', 'gpt-3.5-turbo-0125', 'deepseek-chat', 'gpt-4o'];
 
   // 私有构造函数，防止外部实例化
   OpenAIUserInteraction._internal() {
@@ -57,6 +58,14 @@ class OpenAIUserInteraction {
     OpenAI.baseUrl = "https://vip.yi-zhan.top";
     // OpenAI.apiKey = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY";
     // OpenAI.baseUrl = "https://wcode.net/api/gpt";
+  }
+
+  void setModel(String model) {
+    this.model = model;
+  }
+
+  List<String> getModels() {
+    return models;
   }
 
   /// 发送信息并接收 OpenAI 的回复
