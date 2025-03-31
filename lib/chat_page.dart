@@ -70,13 +70,14 @@ class _ChatPageState extends State<ChatPage> {
                   );
                 }).toList();
               }),
-              PopupMenuButton(
+          PopupMenuButton(
               icon: const Icon(Icons.summarize),
               tooltip: '统计数据',
               itemBuilder: (context) {
                 var userInputLen = ChatController().getUsetInputLength();
                 var len = ChatController().getContentLength();
-                var imgsLen = ChatController().getImgs(widget.chatRecord.title).length;
+                var imgsLen =
+                    ChatController().getImgs(widget.chatRecord.title).length;
                 return [
                   PopupMenuItem(
                     value: '输入字数: $userInputLen',
@@ -88,21 +89,28 @@ class _ChatPageState extends State<ChatPage> {
                   ),
                   PopupMenuItem(
                     value: '图片数量: $imgsLen',
-                    child: Text('图片数量: $imgsLen'), 
+                    child: Text('图片数量: $imgsLen'),
                   ),
                   PopupMenuItem(
-                    value: '策略统计数据',
-                    child: const Text('策略统计数据'), 
-                    onTap: () {
-                      showDialog(context: context, builder: 
-                      (c){
-                        return AlertDialog(
-                          title: const Text('策略统计数据'),
-                          content: Text(ChatController().getStrategyResult()), 
-                        );
-                      });
-                    }
-                  )
+                      value: '策略统计数据',
+                      child: const Text('策略统计数据'),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (c) {
+                              return AlertDialog(
+                                title: const Text('策略统计数据'),
+                                content: SizedBox(
+                                  child: SingleChildScrollView(
+                                    child: 
+                                      Text(
+                                          ChatController().getStrategyResult()),
+                                    
+                                  ),
+                                ),
+                              );
+                            });
+                      })
                 ];
               }),
         ],

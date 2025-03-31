@@ -936,7 +936,7 @@ class ChatController with ChangeNotifier {
     String result = '';
     Map<String, int> strategyResult = {
       '情景深化': 0,
-      '情景支持': 0,
+      '情感支持': 0,
       '视觉引导': 0,
       '认知重构': 0,
       '初始引导': 0,
@@ -951,8 +951,8 @@ class ChatController with ChangeNotifier {
         if(cont.contains('情景深化')){
           strategy = '情景深化';
         }
-        else if(cont.contains('情景支持')){
-          strategy = '情景支持'; 
+        else if(cont.contains('情感支持')){
+          strategy = '情感支持'; 
         }
         else if(cont.contains('视觉引导')){
           strategy = '视觉引导'; 
@@ -963,7 +963,7 @@ class ChatController with ChangeNotifier {
         else if(cont.contains('总结以往所有内容')){
           strategy = '总结以往所有内容'; 
         }
-        print('strategy: $strategy');
+        // print('strategy: $strategy');
         result += strategy;
         if (strategyResult.containsKey(strategy)) {
           strategyResult[strategy] = strategyResult[strategy]! + 1;
