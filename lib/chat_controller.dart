@@ -87,8 +87,9 @@ class ImgRecord {
     try {
       ChatController().isParsed = List.filled(imgs.length, false);
       for (int i = 0; i < imgs.length; i++) {
-        String resultFilePath = imgs[i].replaceAll(RegExp(r'\.[^.]+$'), '.json');
-        if(File(resultFilePath).existsSync()){
+        String resultFilePath =
+            imgs[i].replaceAll(RegExp(r'\.[^.]+$'), '.json');
+        if (File(resultFilePath).existsSync()) {
           ChatController().isParsed[i] = true;
         }
       }
@@ -96,11 +97,13 @@ class ImgRecord {
         if (ChatController().isParsed[index] == false) {
           ChatController().sendPermission = false;
           ChatController().update();
-          Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
+          Logger.log(
+              'selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
           return;
         }
       }
-      Logger.log('selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
+      Logger.log(
+          'selectedImgs: ${ChatController().selectedImgs}\nisParsed: ${ChatController().isParsed}');
       ChatController().sendPermission = true;
       ChatController().update();
     } catch (e, stackTrace) {
@@ -260,7 +263,7 @@ class Chat {
 
   String getLastMsg({int index = 0}) {
     try {
-      if(content.length - 1 - index < 0) return '';
+      if (content.length - 1 - index < 0) return '';
       var lastMsgs = content[content.length - 1 - index];
       // if(lastMsgs.role == OpenAIChatMessageRole.user) {
       //   return lastMsgs.content![0].text!;
@@ -272,7 +275,8 @@ class Chat {
     }
   }
 
-  List<OpenAIChatCompletionChoiceMessageModel> getLastMsgModel(int count, {bool sum = false}) {
+  List<OpenAIChatCompletionChoiceMessageModel> getLastMsgModel(int count,
+      {bool sum = false}) {
     try {
       var startIndex = content.length > count ? content.length - count : 0;
       var lastMsgs = content.sublist(startIndex);
@@ -289,7 +293,7 @@ class Chat {
       res = res.map((e) {
         if (e.role == OpenAIChatMessageRole.assistant) {
           var cont = e.content![4];
-          if(sum)cont = e.content![0];
+          if (sum) cont = e.content![0];
           OpenAIChatCompletionChoiceMessageModel newMsg =
               OpenAIChatCompletionChoiceMessageModel(
                   role: e.role, content: [cont]);
@@ -712,28 +716,24 @@ class ChatController with ChangeNotifier {
       } else {
         _imgRecords[key] = ImgRecord(title: key, imgs: paths);
       }
-      analyseImg(title, paths).then(
-        (value) {
-          
-          notifyListeners(); 
-        }
-      );
+      analyseImg(title, paths).then((value) {
+        notifyListeners();
+      });
       notifyListeners();
     } catch (e, stackTrace) {
       Logger.logError('ChatController addImgs 方法出错: $e', stackTrace);
     }
   }
 
-  void checkParsedImgs(String title){
+  void checkParsedImgs(String title) {
     try {
       var key = '$title-imgs';
       if (_imgRecords.containsKey(key)) {
         _imgRecords[key]!.checkParsedImgs();
         notifyListeners();
       }
-    }
-    catch(e, stackTrace){
-      Logger.logError('ChatController checkParsedImgs 方法出错: $e', stackTrace); 
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController checkParsedImgs 方法出错: $e', stackTrace);
     }
   }
 
@@ -814,8 +814,8 @@ class ChatController with ChangeNotifier {
         var prompt = Prompts().getPrompt("summary_prompt");
         _chats[title]!.setPrompt(prompt);
         var records = _chats[title]!.getLastMsgModel(20, sum: true);
-          records.removeLast();
-        
+        records.removeLast();
+
         OpenAIUserInteraction().sendMessageWithStream('图片解析结果：$imgDiscription',
             (event) {
           final firstCompletionChoice = event.choices.first;
@@ -825,13 +825,13 @@ class ChatController with ChangeNotifier {
         }, () {
           Logger.log('llm 总结: $content');
           var cont = """{
-                "Adopted Strategy": "总结以往所有内容"},
+                "Adopted Strategy": "总结以往所有内容",
                 "Response": $content,
                 "updated_image": [],
-                "Recommendations": []}
+                "Recommendations": []
               }""";
-            _chats[title]!.content.last.content![4] =
-                OpenAIChatCompletionChoiceMessageContentItemModel.text(cont);
+          _chats[title]!.content.last.content![4] =
+              OpenAIChatCompletionChoiceMessageContentItemModel.text(cont);
         }, records: records);
 
         notifyListeners();
@@ -872,15 +872,15 @@ class ChatController with ChangeNotifier {
       // var path = 'chats/$title';
       // var result = '';
       var imgPaths = finalSelectedImgs.map((e) {
-            String path = '';
-            if (e >= 0) {
-              // path = _imgRecords['$title-imgs']!.imgs[e - 1];
-              path = _imgRecords['$title-imgs']!.imgs[e];
-            }
-            return path;
-          }).toList();
+        String path = '';
+        if (e >= 0) {
+          // path = _imgRecords['$title-imgs']!.imgs[e - 1];
+          path = _imgRecords['$title-imgs']!.imgs[e];
+        }
+        return path;
+      }).toList();
       var imgDiscription =
-              json.decode(await analyseImg(title, imgPaths)).toString();
+          json.decode(await analyseImg(title, imgPaths)).toString();
       return imgDiscription;
     } catch (e, stackTrace) {
       Logger.logError('ChatController getImgAnalasis 方法出错: $e', stackTrace);
@@ -896,40 +896,91 @@ class ChatController with ChangeNotifier {
     }
   }
 
-  int getContentLength(){
+  int getContentLength() {
     try {
-      return _chats[currentTitle]!.content.length; 
-    }
-    catch(e, stackTrace){
+      return _chats[currentTitle]!.content.length;
+    } catch (e, stackTrace) {
       Logger.logError('ChatController getContentLength 方法出错: $e', stackTrace);
-      return 0; 
-    }
-  }
-  int getUsetInputLength(){
-    try {
-      var content = _chats[currentTitle]!.content;
-      int len = 0;
-      for(var i in content){
-        if(i.role == OpenAIChatMessageRole.user){
-          len += i.content![0].text!.length;
-        } 
-      }
-      return len;
-    }
-    catch(e, stackTrace){
-      Logger.logError('ChatController getUsetInputLength 方法出错: $e', stackTrace);
-      return 0; 
+      return 0;
     }
   }
 
-  int getImgsLength(){
+  int getUsetInputLength() {
+    try {
+      var content = _chats[currentTitle]!.content;
+      int len = 0;
+      for (var i in content) {
+        if (i.role == OpenAIChatMessageRole.user) {
+          len += i.content![0].text!.length;
+        }
+      }
+      return len;
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController getUsetInputLength 方法出错: $e', stackTrace);
+      return 0;
+    }
+  }
+
+  int getImgsLength() {
     try {
       var imgs = getImgs(currentTitle);
       return imgs.length;
-    }
-    catch(e, stackTrace){
+    } catch (e, stackTrace) {
       Logger.logError('ChatController getImgsLength 方法出错: $e', stackTrace);
       return 0;
     }
+  }
+
+  String getStrategyResult() {
+    var content = _chats[currentTitle]!.content;
+    String result = '';
+    Map<String, int> strategyResult = {
+      '情景深化': 0,
+      '情景支持': 0,
+      '视觉引导': 0,
+      '认知重构': 0,
+      '初始引导': 0,
+      '总结以往所有内容': 0,
+    };
+    
+    Map<String, int> strategyReplyResult = {};
+    String strategy = '初始引导';
+    for (var i in content) {
+      if (i.role == OpenAIChatMessageRole.assistant) {
+        var cont = i.content![4].text!;
+        if(cont.contains('情景深化')){
+          strategy = '情景深化';
+        }
+        else if(cont.contains('情景支持')){
+          strategy = '情景支持'; 
+        }
+        else if(cont.contains('视觉引导')){
+          strategy = '视觉引导'; 
+        }
+        else if(cont.contains('认知重构')){
+          strategy = '认知重构'; 
+        }
+        else if(cont.contains('总结以往所有内容')){
+          strategy = '总结以往所有内容'; 
+        }
+        print('strategy: $strategy');
+        result += strategy;
+        if (strategyResult.containsKey(strategy)) {
+          strategyResult[strategy] = strategyResult[strategy]! + 1;
+        } else {
+          strategyResult[strategy] = 1;
+        }
+      } else if (i.role == OpenAIChatMessageRole.user) {
+        result += ' : ${i.content![0].text!.length}\n';
+        if (strategyReplyResult.containsKey(strategy)) {
+          strategyReplyResult[strategy] =
+              strategyReplyResult[strategy]! + i.content![0].text!.length;
+        } else {
+          strategyReplyResult[strategy] = i.content![0].text!.length;
+        }
+      }
+    }
+
+    return '$result\n 策略数量：$strategyResult\n 策略回复字数：$strategyReplyResult';
   }
 }

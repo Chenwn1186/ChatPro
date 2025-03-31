@@ -89,6 +89,19 @@ class _ChatPageState extends State<ChatPage> {
                   PopupMenuItem(
                     value: '图片数量: $imgsLen',
                     child: Text('图片数量: $imgsLen'), 
+                  ),
+                  PopupMenuItem(
+                    value: '策略统计数据',
+                    child: const Text('策略统计数据'), 
+                    onTap: () {
+                      showDialog(context: context, builder: 
+                      (c){
+                        return AlertDialog(
+                          title: const Text('策略统计数据'),
+                          content: Text(ChatController().getStrategyResult()), 
+                        );
+                      });
+                    }
                   )
                 ];
               }),
