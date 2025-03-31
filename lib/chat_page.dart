@@ -69,7 +69,29 @@ class _ChatPageState extends State<ChatPage> {
                     },
                   );
                 }).toList();
-              })
+              }),
+              PopupMenuButton(
+              icon: const Icon(Icons.summarize),
+              tooltip: '统计数据',
+              itemBuilder: (context) {
+                var userInputLen = ChatController().getUsetInputLength();
+                var len = ChatController().getContentLength();
+                var imgsLen = ChatController().getImgs(widget.chatRecord.title).length;
+                return [
+                  PopupMenuItem(
+                    value: '输入字数: $userInputLen',
+                    child: Text('输入字数: $userInputLen'),
+                  ),
+                  PopupMenuItem(
+                    value: '对话数量: $len',
+                    child: Text('对话数量: $len'),
+                  ),
+                  PopupMenuItem(
+                    value: '图片数量: $imgsLen',
+                    child: Text('图片数量: $imgsLen'), 
+                  )
+                ];
+              }),
         ],
       ),
       backgroundColor: Colors.transparent,

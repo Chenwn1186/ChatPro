@@ -895,4 +895,41 @@ class ChatController with ChangeNotifier {
       Logger.logError('ChatController update 方法出错: $e', stackTrace);
     }
   }
+
+  int getContentLength(){
+    try {
+      return _chats[currentTitle]!.content.length; 
+    }
+    catch(e, stackTrace){
+      Logger.logError('ChatController getContentLength 方法出错: $e', stackTrace);
+      return 0; 
+    }
+  }
+  int getUsetInputLength(){
+    try {
+      var content = _chats[currentTitle]!.content;
+      int len = 0;
+      for(var i in content){
+        if(i.role == OpenAIChatMessageRole.user){
+          len += i.content![0].text!.length;
+        } 
+      }
+      return len;
+    }
+    catch(e, stackTrace){
+      Logger.logError('ChatController getUsetInputLength 方法出错: $e', stackTrace);
+      return 0; 
+    }
+  }
+
+  int getImgsLength(){
+    try {
+      var imgs = getImgs(currentTitle);
+      return imgs.length;
+    }
+    catch(e, stackTrace){
+      Logger.logError('ChatController getImgsLength 方法出错: $e', stackTrace);
+      return 0;
+    }
+  }
 }
