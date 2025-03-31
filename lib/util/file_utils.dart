@@ -128,19 +128,19 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
               }
             },
             icon: const Icon(Icons.arrow_upward),
-            tooltip: "上级目录",
+            tooltip: "Back",
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                '选择文件',
+                'File Explorer',
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(
                   width: 500,
                   child: Text(
-                    '当前路径：$_currentPath',
+                    'Current path: $_currentPath',
                     style: const TextStyle(fontSize: 10),
                   ))
             ],
@@ -197,7 +197,7 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
                               child: Text('Error: ${snapshot.error}'));
                         } else if (!snapshot.hasData ||
                             snapshot.data!.isEmpty) {
-                          return const Center(child: Text('当前目录下没有文件或文件夹'));
+                          return const Center(child: Text('empty'));
                         } else {
                           return ListView.builder(
                               itemCount: snapshot.data!.length,
@@ -285,10 +285,10 @@ class _FilePickerDialogState extends State<FilePickerDialog> {
               );
             }
           },
-          child: const Text('确定'),
+          child: const Text('OK'),
         ),
         TextButton(
-          child: const Text('取消'),
+          child: const Text('Cancel'),
           onPressed: () {
             Navigator.of(context).pop();
           },

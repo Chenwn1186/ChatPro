@@ -390,7 +390,7 @@ class Chat {
         return ChatPageMsg(
           left: left,
           mdMsg: mdMsg,
-          imgText: '小助手',
+          imgText: 'Assistant',
           headBGColor: ChatThemes().getColors()[0],
           headTextColor: ChatThemes().getColors()[1],
           bgColor: ChatThemes().getColors()[2],
@@ -404,7 +404,7 @@ class Chat {
         return ChatPageMsg(
           left: left,
           mdMsg: mdMsg,
-          imgText: '用户',
+          imgText: 'User',
           headBGColor: ChatThemes().getColors()[4],
           headTextColor: ChatThemes().getColors()[5],
           bgColor: ChatThemes().getColors()[6],
@@ -550,27 +550,27 @@ class ChatController with ChangeNotifier {
           Logger.log('用户输入：$message');
           Logger.log('用户选择的图片：$imgPaths');
           if (!resend) {
-            sendMessage(title, '正在解析图片中...', true);
+            sendMessage(title, 'Parsing the image now...', true);
           }
           var imgDiscription =
               json.decode(await analyseImg(title, imgPaths)).toString();
-          var imgDiscriptionRes = '图片解析结果：$imgDiscription';
+          var imgDiscriptionRes = 'Images data：$imgDiscription';
           if (imgDiscription.isEmpty) {
             imgDiscriptionRes = '';
           }
-          var prompt = Prompts().getPrompt('psychological_companion_reply');
+          var prompt = Prompts().getPrompt('psychological_companion_reply_en');
           String content = '';
 
           _chats[title]!.setPrompt(prompt);
-          _chats[title]!.setLastMsg('正在思考中...');
+          _chats[title]!.setLastMsg('I\'m thinking...');
 
           var records = _chats[title]!.getLastMsgModel(20);
           records.removeLast();
           records.removeLast();
 
           var input = resend
-              ? "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!"
-              : "$imgDiscriptionRes, \n用户输入: $message\n你之前回复的格式不是json格式,请重新组织答案!";
+              ? "$imgDiscriptionRes, \n user input: $message\n The format of your previous reply is not in JSON format. Please re-organize the answer! "
+              : "$imgDiscriptionRes, \n user input: $message\n The format of your previous reply is not in JSON format. Please re-organize the answer! ";
           await OpenAIUserInteraction().sendMessageWithStream(input, (event) {
             final firstCompletionChoice = event.choices.first;
             try {
@@ -650,7 +650,7 @@ class ChatController with ChangeNotifier {
     int startIndex = input.indexOf('"Response":');
     if (startIndex == -1) {
       // 如果没有找到 "Response": "，返回空字符串
-      return '正在思考中...';
+      return 'I\'m thinking...';
     }
     // 计算 "Response": 之后的起始位置
     startIndex += '"Response":'.length;
@@ -692,7 +692,7 @@ class ChatController with ChangeNotifier {
           }
 
           // 添加新的键值对
-          jsonData['更新描述'] = memorys[i];
+          jsonData['Description'] = memorys[i];
           notifyListeners();
 
           // 将更新后的内容写入 JSON 文件
@@ -753,7 +753,7 @@ class ChatController with ChangeNotifier {
   void generateGuidence(String title) {
     try {
       sendPermission = false;
-      sendMessage(title, "正在思考中...", true);
+      sendMessage(title, "I'm thinking...", true);
 
       var str = Guidance().generateGuidanceMessage();
       str.then((value) {
@@ -810,13 +810,13 @@ class ChatController with ChangeNotifier {
       if (_chats.containsKey(title)) {
         var imgDiscription = await getImgAnalasis(title);
         String content = '';
-        sendMessage(title, '正在总结中...', true);
-        var prompt = Prompts().getPrompt("summary_prompt");
+        sendMessage(title, 'I\'m summarizing now....', true);
+        var prompt = Prompts().getPrompt("summary_prompt_en");
         _chats[title]!.setPrompt(prompt);
         var records = _chats[title]!.getLastMsgModel(20, sum: true);
         records.removeLast();
 
-        OpenAIUserInteraction().sendMessageWithStream('图片解析结果：$imgDiscription',
+        OpenAIUserInteraction().sendMessageWithStream('Images data: $imgDiscription',
             (event) {
           final firstCompletionChoice = event.choices.first;
           content += firstCompletionChoice.delta.content?.first?.text ?? '';
@@ -825,7 +825,7 @@ class ChatController with ChangeNotifier {
         }, () {
           Logger.log('llm 总结: $content');
           var cont = """{
-                "Adopted Strategy": "总结以往所有内容",
+                "Adopted Strategy": "summary",
                 "Response": $content,
                 "updated_image": [],
                 "Recommendations": []
@@ -940,7 +940,7 @@ class ChatController with ChangeNotifier {
       '视觉引导': 0,
       '认知重构': 0,
       '初始引导': 0,
-      '总结以往所有内容': 0,
+      'summary': 0,
     };
     
     Map<String, int> strategyReplyResult = {};

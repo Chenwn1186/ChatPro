@@ -120,7 +120,7 @@ class ChatList extends StatelessWidget {
                 context: context,
                 builder: (context) {
                   return AlertDialog(
-                    title: const Text('请输入对话标题'),
+                    title: const Text('Please enter the title of the chat:'),
                     content: TextField(
                       controller: titleController,
                     ),
@@ -135,7 +135,7 @@ class ChatList extends StatelessWidget {
                           }
                           Navigator.of(context).pop();
                         },
-                        child: const Text('确定'),
+                        child: const Text('OK'),
                       ),
                     ],
                   );

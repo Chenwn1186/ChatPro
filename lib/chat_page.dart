@@ -58,7 +58,7 @@ class _ChatPageState extends State<ChatPage> {
         actions: [
           PopupMenuButton(
               icon: const Icon(Icons.color_lens),
-              tooltip: '切换主题',
+              tooltip: 'theme',
               itemBuilder: (context) {
                 return ChatThemes().getThemeNames().map((e) {
                   return PopupMenuItem(
@@ -72,7 +72,7 @@ class _ChatPageState extends State<ChatPage> {
               }),
           PopupMenuButton(
               icon: const Icon(Icons.summarize),
-              tooltip: '统计数据',
+              tooltip: 'data summary',
               itemBuilder: (context) {
                 var userInputLen = ChatController().getUsetInputLength();
                 var len = ChatController().getContentLength();
@@ -80,37 +80,37 @@ class _ChatPageState extends State<ChatPage> {
                     ChatController().getImgs(widget.chatRecord.title).length;
                 return [
                   PopupMenuItem(
-                    value: '输入字数: $userInputLen',
-                    child: Text('输入字数: $userInputLen'),
+                    value: 'Enter word count: $userInputLen',
+                    child: Text('Enter word count: $userInputLen'),
                   ),
                   PopupMenuItem(
-                    value: '对话数量: $len',
-                    child: Text('对话数量: $len'),
+                    value: 'Number of conversations: $len',
+                    child: Text('Number of conversations: $len'),
                   ),
                   PopupMenuItem(
-                    value: '图片数量: $imgsLen',
-                    child: Text('图片数量: $imgsLen'),
+                    value: 'Number of images: $imgsLen',
+                    child: Text('Number of images: $imgsLen'),
                   ),
-                  PopupMenuItem(
-                      value: '策略统计数据',
-                      child: const Text('策略统计数据'),
-                      onTap: () {
-                        showDialog(
-                            context: context,
-                            builder: (c) {
-                              return AlertDialog(
-                                title: const Text('策略统计数据'),
-                                content: SizedBox(
-                                  child: SingleChildScrollView(
-                                    child: 
-                                      Text(
-                                          ChatController().getStrategyResult()),
+                  // PopupMenuItem(
+                  //     value: 'strategy result',
+                  //     child: const Text('strategy result'),
+                  //     onTap: () {
+                  //       showDialog(
+                  //           context: context,
+                  //           builder: (c) {
+                  //             return AlertDialog(
+                  //               title: const Text('strategy result'),
+                  //               content: SizedBox(
+                  //                 child: SingleChildScrollView(
+                  //                   child: 
+                  //                     Text(
+                  //                         ChatController().getStrategyResult()),
                                     
-                                  ),
-                                ),
-                              );
-                            });
-                      })
+                  //                 ),
+                  //               ),
+                  //             );
+                  //           });
+                  //     })
                 ];
               }),
         ],
@@ -501,7 +501,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
                             controller: _textEditingController,
                             focusNode: _focusNode,
                             decoration: const InputDecoration(
-                              hintText: '输入消息...',
+                              hintText: 'Input your message...',
                               border: InputBorder.none,
                             ),
                             maxLines: null,
@@ -520,18 +520,18 @@ class _ChatInputFieldState extends State<ChatInputField> {
                 ChatController().generateGuidence(widget.title);
               },
               icon: const Icon(Icons.wysiwyg_outlined),
-              tooltip: '生成引导',
+              tooltip: 'Generate guidance',
             ),
             IconButton(
               onPressed: () {
                 ChatController().summarize(widget.title);
               },
               icon: const Icon(Icons.done_all_outlined),
-              tooltip: "总结",
+              tooltip: "Summary",
             ),
             IconButton(
               icon: const Icon(Icons.photo),
-              tooltip: "上传图片",
+              tooltip: "Upload image",
               onPressed: () async {
                 // 处理上传图片的逻辑
                 List<String>? filePaths = await FileUtils.pickFile(context);
@@ -556,7 +556,7 @@ class _ChatInputFieldState extends State<ChatInputField> {
               builder: (context, sendPermission, child) {
                 return IconButton(
                   icon: const Icon(Icons.send),
-                  tooltip: "发送",
+                  tooltip: "Send",
                   onPressed: !sendPermission
                       ? null
                       : () {

@@ -88,11 +88,19 @@ def analyse_img():
         # 生成与大模型对话的字符串
         conversation_str = f"data:image/{image_format.lower()};base64,{img_base64}"
 
-        prompt = """根据提供的元数据 JSON 和图像，你要尽可能详细地描述图像中的内容，包括人物、物体和事件。你要特别注意，如果以下某些字段不存在，直接返回""或者[]。
-    以 JSON 格式返回响应，包含以下字段："时间"（精确时间、星期几、上午/下午/晚上，是字符串）、
-    "地点"（位置，是字符串）、"场景"（场景类型，是字符串）、"人物"（包含描述的人物，是字符串的列表）、
-    "物体"（包含描述的物体，是字符串的列表）、"环境"（天气等，是字符串）、
-    "活动"（包含描述的活动，是字符串的列表）、"情绪"（带有推理的情绪，是字符串）、"标签"(该图片可能具有的标签，是字符串的列表)。
+        prompt = """According to the provided metadata JSON and the image, 
+        you should describe the contents in the image as detailed as possible, 
+        including people, objects, and events. You should pay special attention that if some of the following fields do not exist, 
+        directly return "" or [].
+        Return the response in JSON format, including the following fields: 
+        "Time" (precise time, day of the week, morning/afternoon/evening, which is a string), 
+        "Location" (position, which is a string), "Scene" (scene type, which is a string), 
+        "People" (people with descriptions, which is a list of strings), 
+        "Objects" (objects with descriptions, which is a list of strings), 
+        "Environment" (such as weather, which is a string), 
+        "Activities" (activities with descriptions, which is a list of strings), 
+        "Emotion" (emotion with inference, which is a string), 
+        "Tags" (possible tags for this image, which is a list of strings). 
     """
     
         # 调用OpenAI API获取大模型的回复

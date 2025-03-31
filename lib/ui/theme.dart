@@ -13,9 +13,9 @@ class ChatThemes {
   // 私有构造函数，防止外部实例化
   ChatThemes._internal();
 
-  String currentTheme = '白色';
+  String currentTheme = 'white';
   static const Map<String, List<Color>> themes = {
-    '紫色': [
+    'purple': [
       Color.fromARGB(255, 166, 51, 243),
       Colors.white,
       Color.fromARGB(205, 239, 222, 255),
@@ -25,7 +25,7 @@ class ChatThemes {
       Color.fromARGB(205, 214, 233, 248),
       Color.fromARGB(255, 16, 112, 186),
     ],
-    '蓝色': [
+    'blue': [
       Color.fromARGB(255, 51, 67, 243),
       Colors.white,
       Color.fromARGB(205, 1, 176, 245),
@@ -35,7 +35,7 @@ class ChatThemes {
       Color.fromARGB(205, 214, 233, 248),
       Color.fromARGB(255, 16, 112, 186),
     ],
-    '绿色': [
+    'green': [
       Color.fromARGB(255, 62, 153, 36),
       Colors.white,
       Color.fromARGB(205, 54, 160, 58),
@@ -45,7 +45,7 @@ class ChatThemes {
       Color.fromARGB(235, 255, 255, 255),
       Color.fromARGB(255, 2, 29, 51),
     ],
-    '白色': [
+    'white': [
       Color.fromARGB(255, 230, 230, 230),
       Color.fromARGB(255, 38, 38, 38),
       Color.fromARGB(255, 233, 233, 233),
@@ -55,7 +55,7 @@ class ChatThemes {
       Color.fromARGB(235, 230, 230, 230),
       Color.fromARGB(255, 43, 43, 43),
     ],
-    '梅红': [
+    'pink': [
       Color.fromARGB(255, 190, 87, 87),
       Color.fromARGB(255, 237, 237, 237),
       Color.fromARGB(255, 225, 107, 140),

@@ -28,7 +28,6 @@ class Logger {
   }
 }
 
-
 class OpenAIUserInteraction {
   // 静态私有实例，用于存储单例
   static final OpenAIUserInteraction _instance =
@@ -42,7 +41,12 @@ class OpenAIUserInteraction {
   // String model = "deepseek-chat";
   // String model = "gpt-3.5-turbo-0125";
   String model = "gpt-4o-mini";
-  List<String> models = ['gpt-4o-mini', 'gpt-3.5-turbo-0125', 'deepseek-chat', 'gpt-4o'];
+  List<String> models = [
+    'gpt-4o-mini',
+    'gpt-3.5-turbo-0125',
+    'deepseek-chat',
+    'gpt-4o'
+  ];
 
   // 私有构造函数，防止外部实例化
   OpenAIUserInteraction._internal() {
@@ -125,7 +129,8 @@ class OpenAIUserInteraction {
       chatCompletion.listen(onData, onDone: onDone);
       Logger.log('===========================聊天记录=========================');
       for (var i in records) {
-        Logger.log('len: ${i.content!.length} ${i.role}: ${i.content!.first.text}');
+        Logger.log(
+            'len: ${i.content!.length} ${i.role}: ${i.content!.first.text}');
       }
     } catch (e, stackTrace) {
       Logger.logError('发送消息到 OpenAI with stream时出错: $e', stackTrace);
@@ -136,13 +141,13 @@ class OpenAIUserInteraction {
 class Guidance {
   // 静态常量，存储用于引导回忆的提示语列表
   static final List<String> recallCues = [
-    "某个特定的季节或节日，例如 '你还记得去年冬天的一个特别时刻吗？'",
-    "某个特定的地点，例如 '你有没有在一次难忘的旅行中拍的照片？'",
-    "某个重要的人或物品，例如 '你有没有收到过一份特别的礼物或卡片？'",
-    "一个充满喜悦或情感的时刻，例如 '有没有一段经历让你特别开心或深受感动？'",
-    "人生的一个转折点，例如 '有没有一段经历改变了你对生活的看法？'",
-    "一个特别的事件，例如 '你有没有参加过一次难忘的聚会或活动？'",
-    "任何与用户相关的独特经历，例如 '有没有一张照片让你想起某个特定的场景？'"
+    "a certain specific season or festival, for example, 'Do you remember a special moment last winter?'",
+    "a certain specific place, for example, 'Do you have any photos taken during an unforgettable trip?'",
+    "a certain important person or item, for example, 'Have you ever received a special gift or card?'",
+    "a moment full of joy or emotion, for example, 'Is there any experience that made you especially happy or deeply touched?'",
+    "a turning point in life, for example, 'Is there any experience that has changed your view of life?'",
+    "a special event, for example, 'Have you ever participated in an unforgettable party or event?'",
+    "any unique experience related to the user, for example, 'Is there a photo that reminds you of a certain specific scene?'"
   ];
 
   /// 异步方法，用于生成引导用户回忆的消息
@@ -156,9 +161,10 @@ class Guidance {
       // 从 recall_cues 列表中随机选择一个回忆线索
       final selectedCue = recallCues[random.nextInt(recallCues.length)];
       // 从 Prompts 单例中获取引导提示语
-      var guidancePrompt = Prompts().getPrompt('guidance_prompt_CN');
+      var guidancePrompt = Prompts().getPrompt('guidance_prompt');
       // 构造发送给 GPT - 4o 模型的提示，包含引导提示和选中的回忆线索
-      final prompt = "$guidancePrompt\n\n当前选择的回忆线索是：$selectedCue";
+      final prompt =
+          "$guidancePrompt\n current selected recalling clues：$selectedCue";
       // 记录生成的提示的日志
       // Logger.log('生成的提示: $prompt');
       // 调用 OpenAIUserInteraction 单例的 sendMessage 方法，使用 GPT - 4o 模型生成引导消息
@@ -225,37 +231,37 @@ class Prompts {
     return promptMap[promptName]!;
   }
 
-  Future<Map<String, dynamic>> generateStrategy(String input,
-      String imgDiscription, String shortRecord, String longRecord) async {
-    try {
-      Logger.log('开始生成策略');
-      var prompt = getPrompt('psychological_companion_reply');
-      var content = '''当前用户输入（必须直接回应）：$input
-对话历史（短期记忆）：$shortRecord
-长期记忆（过去相关回忆）：$longRecord
-选中图片记忆：${imgDiscription.toString()}''';
-      var strategy =
-          await OpenAIUserInteraction().sendMessage(content + prompt);
-      Logger.log('生成的策略: $strategy');
-      strategy = strategy.replaceAll(RegExp(r'```json|```'), '').trim();
-      var strategyMap = jsonDecode(strategy) as Map<String, dynamic>;
-      Logger.log('解析后的策略: $strategyMap');
-      if (strategyMap.containsKey('updated_image')) {
-        strategyMap['updated_image'] =
-            List<String>.from(strategyMap['updated_image']);
-      }
-      return strategyMap;
-    } catch (e, stackTrace) {
-      Logger.logError('生成策略时出错: $e', stackTrace);
-      return {'Adopted Strategy': '', 'Response': '', 'updated_image': ''};
-    }
-  }
+//   Future<Map<String, dynamic>> generateStrategy(String input,
+//       String imgDiscription, String shortRecord, String longRecord) async {
+//     try {
+//       Logger.log('开始生成策略');
+//       var prompt = getPrompt('psychological_companion_reply_en');
+//       var content = '''当前用户输入（必须直接回应）：$input
+// 对话历史（短期记忆）：$shortRecord
+// 长期记忆（过去相关回忆）：$longRecord
+// 选中图片记忆：${imgDiscription.toString()}''';
+//       var strategy =
+//           await OpenAIUserInteraction().sendMessage(content + prompt);
+//       Logger.log('生成的策略: $strategy');
+//       strategy = strategy.replaceAll(RegExp(r'```json|```'), '').trim();
+//       var strategyMap = jsonDecode(strategy) as Map<String, dynamic>;
+//       Logger.log('解析后的策略: $strategyMap');
+//       if (strategyMap.containsKey('updated_image')) {
+//         strategyMap['updated_image'] =
+//             List<String>.from(strategyMap['updated_image']);
+//       }
+//       return strategyMap;
+//     } catch (e, stackTrace) {
+//       Logger.logError('生成策略时出错: $e', stackTrace);
+//       return {'Adopted Strategy': '', 'Response': '', 'updated_image': ''};
+//     }
+//   }
 
   String generateStrategyPrompt(
       String imgDiscription, String shortRecord, String longRecord) {
     try {
       Logger.log('开始生成策略');
-      var prompt = getPrompt('psychological_companion_reply');
+      var prompt = getPrompt('psychological_companion_reply_en');
 //       var content = '''
 // 长期记忆（过去相关回忆）：$longRecord
 // 选中图片记忆：${imgDiscription.toString()}''';
@@ -267,7 +273,6 @@ class Prompts {
     }
   }
 }
-
 
 Future<String> analyseImg(String title, List<String> ipath) async {
   var path = ipath.map((e) => e).toList();
@@ -297,12 +302,10 @@ Future<String> analyseImg(String title, List<String> ipath) async {
   try {
     Logger.log('开始分析图片，标题: $title, 图片路径: $path');
     for (String imagePath in path) {
-      futureResults.add(analyseImgOnline(imagePath).then(
-        (value) {
-          ChatController().checkParsedImgs(title);
-          return value;
-        }
-      ));
+      futureResults.add(analyseImgOnline(imagePath).then((value) {
+        ChatController().checkParsedImgs(title);
+        return value;
+      }));
     }
     var fRes = await Future.wait(futureResults);
     results.addAll(fRes);
@@ -352,5 +355,3 @@ Future<String> analyseImgOnline(String imagePath) async {
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
   return response.body;
 }
-
-

@@ -27,7 +27,7 @@ class ChatImageData {
     if(index < 0)return Container();
     return Container(
       // color: Colors.blue,
-      width: width,
+      width: width + 30,
       height: height,
       padding: const EdgeInsets.only(left: 4),
       alignment: Alignment.center,
@@ -39,31 +39,31 @@ class ChatImageData {
             child: Column(
               children: [
                 ChatImageDataItem(
-                    title: '时间', content: time, width: textWidth),
+                    title: 'Time', content: time, width: textWidth),
                 ChatImageDataItem(
-                    title: '地点', content: location, width: textWidth),
+                    title: 'Location', content: location, width: textWidth),
                 ChatImageDataItem(
-                    title: '场景', content: scene, width: textWidth),
+                    title: 'Scene', content: scene, width: textWidth),
                 ChatImageDataItem(
-                    title: '人物',
+                    title: 'People',
                     content: people.join('，'),
                     width: textWidth),
                 ChatImageDataItem(
-                    title: '物体',
+                    title: 'Objects',
                     content: objects.join('，'),
                     width: textWidth),
                 ChatImageDataItem(
-                    title: '环境',
+                    title: 'Environment',
                     content: environment,
                     width: textWidth),
                 ChatImageDataItem(
-                    title: '活动',
+                    title: 'Activitys',
                     content: activitity.join('，'),
                     width: textWidth),
                 ChatImageDataItem(
-                    title: '情绪', content: emotion, width: textWidth),
+                    title: 'Emotion', content: emotion, width: textWidth),
                 ChatImageDataItem(
-                    title: '描述', content: describe, width: textWidth),
+                    title: 'Description', content: describe, width: textWidth),
               ],
             ),
           ),
@@ -90,20 +90,20 @@ class ChatImageData {
       if (!file.existsSync()) return;
       var jsonData = file.readAsStringSync();
       var data = json.decode(jsonData) as Map<String, dynamic>;
-      time = data['时间'];
-      location = data['地点'];
-      scene = data['场景'];
-      List<dynamic> temp = data['人物'];
+      time = data['Time'];
+      location = data['Location'];
+      scene = data['Scene'];
+      List<dynamic> temp = data['People'];
       people = List<String>.from(temp);
-      temp = data['物体'];
+      temp = data['Objects'];
       objects = List<String>.from(temp);
-      environment = data['环境'];
-      temp = data['活动'];
+      environment = data['Environment'];
+      temp = data['Activities'];
       activitity = List<String>.from(temp);
-      emotion = data['情绪'];
-      describe = data['更新描述'] ?? '';
+      emotion = data['Emotion'];
+      describe = data['Description'] ?? '';
     } catch (e, stackTrace) {
-      Logger.logError('chat image data updateData 方法出错: $e', stackTrace);
+      // Logger.logError('chat image data updateData 方法出错: $e', stackTrace);
     }
   }
 
@@ -126,7 +126,7 @@ class ChatImageData {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('图片信息编辑'),
+          title: const Text('Edit Image Data'),
           content: SizedBox(
             height: 500,
             child: Row(
@@ -153,39 +153,39 @@ class ChatImageData {
                     children: [
                       const Spacer(),
                       TextField(
-                        decoration: const InputDecoration(labelText: '时间'),
+                        decoration: const InputDecoration(labelText: 'Time'),
                         controller: timeController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '地点'),
+                        decoration: const InputDecoration(labelText: 'Location'),
                         controller: locationController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '场景'),
+                        decoration: const InputDecoration(labelText: 'Scene'),
                         controller: sceneController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '人物'),
+                        decoration: const InputDecoration(labelText: 'People'),
                         controller: peopleController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '物体'),
+                        decoration: const InputDecoration(labelText: 'Objects'),
                         controller: objectsController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '环境'),
+                        decoration: const InputDecoration(labelText: 'Environment'),
                         controller: environmentController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '活动'),
+                        decoration: const InputDecoration(labelText: 'Activitys'),
                         controller: activitityController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '情绪'),
+                        decoration: const InputDecoration(labelText: 'Emotion'),
                         controller: emotionController,
                       ),
                       TextField(
-                        decoration: const InputDecoration(labelText: '描述'),
+                        decoration: const InputDecoration(labelText: 'Description'),
                         controller: describeController,
                       ),
                       const Spacer(),
@@ -200,7 +200,7 @@ class ChatImageData {
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: const Text('取消'),
+              child: const Text('Cancel'),
             ),
             TextButton(
               onPressed: (){
@@ -222,15 +222,15 @@ class ChatImageData {
                 var file = File(jsonPath);
 
                 var data = {
-                  '时间': time,
-                  '地点': location,
-                  '场景': scene,
-                  '人物': people,
-                  '物体': objects,
-                  '环境': environment,
-                  '活动': activitity,
-                  '情绪': emotion,
-                  '更新描述': describe,
+                  'Time': time,
+                  'Location': location,
+                  'Scene': scene,
+                  'People': people,
+                  'Objects': objects,
+                  'Environment': environment,
+                  'Activitys': activitity,
+                  'Emotion': emotion,
+                  'Description': describe,
                 };
 
                 try {
@@ -247,7 +247,7 @@ class ChatImageData {
                   Logger.logError('chat image data save json 方法出错: $e');
                 }
               },
-              child: const Text('保存'),
+              child: const Text('Save'),
             ),
           ],
         );

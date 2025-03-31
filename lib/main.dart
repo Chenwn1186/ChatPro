@@ -103,7 +103,7 @@ class MainApp extends StatelessWidget {
                 actions: [
                   PopupMenuButton(
                       icon: const Icon(Icons.change_circle_rounded),
-                      tooltip: '切换模型',
+                      tooltip: 'switch model',
                       itemBuilder: (context) {
                         return OpenAIUserInteraction().getModels().map((e) {
                           return PopupMenuItem(
@@ -115,8 +115,8 @@ class MainApp extends StatelessWidget {
                           );
                         }).toList()..add(
                             PopupMenuItem(
-                              value: '当前模型',
-                              child: Text('当前模型: ${OpenAIUserInteraction().model}'),
+                              value: 'current model',
+                              child: Text('current model: ${OpenAIUserInteraction().model}'),
                               onTap: () {
                                 // OpenAIUserInteraction().setModel('设置');
                               },
