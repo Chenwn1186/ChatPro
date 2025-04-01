@@ -942,26 +942,23 @@ class ChatController with ChangeNotifier {
       '初始引导': 0,
       '总结以往所有内容': 0,
     };
-    
+
     Map<String, int> strategyReplyResult = {};
+    Map<String, String> strategyReplyResultStr = {};
     String strategy = '初始引导';
     for (var i in content) {
       if (i.role == OpenAIChatMessageRole.assistant) {
         var cont = i.content![4].text!;
-        if(cont.contains('情景深化')){
+        if (cont.contains('情景深化')) {
           strategy = '情景深化';
-        }
-        else if(cont.contains('情感支持')){
-          strategy = '情感支持'; 
-        }
-        else if(cont.contains('视觉引导')){
-          strategy = '视觉引导'; 
-        }
-        else if(cont.contains('认知重构')){
-          strategy = '认知重构'; 
-        }
-        else if(cont.contains('总结以往所有内容')){
-          strategy = '总结以往所有内容'; 
+        } else if (cont.contains('情感支持')) {
+          strategy = '情感支持';
+        } else if (cont.contains('视觉引导')) {
+          strategy = '视觉引导';
+        } else if (cont.contains('认知重构')) {
+          strategy = '认知重构';
+        } else if (cont.contains('总结以往所有内容')) {
+          strategy = '总结以往所有内容';
         }
         // print('strategy: $strategy');
         result += strategy;
@@ -975,12 +972,26 @@ class ChatController with ChangeNotifier {
         if (strategyReplyResult.containsKey(strategy)) {
           strategyReplyResult[strategy] =
               strategyReplyResult[strategy]! + i.content![0].text!.length;
+          strategyReplyResultStr[strategy] =
+              '${strategyReplyResultStr[strategy]!}|${i.content![0].text!.length.toString()}';
         } else {
           strategyReplyResult[strategy] = i.content![0].text!.length;
+          strategyReplyResultStr[strategy] = i.content![0].text!.length.toString();
         }
       }
     }
-
-    return '$result\n 策略数量：$strategyResult\n 策略回复字数：$strategyReplyResult';
+    String strategyResultStr = '';
+    for (var i in strategyResult.entries) {
+      strategyResultStr += '${i.key}: ${i.value}\n';
+    }
+    String strategyReplyResultStr1 = '';
+    for (var i in strategyReplyResult.entries) {
+      strategyReplyResultStr1 += '${i.key}: ${i.value}\n';
+    }
+    String strategyReplyResultStr2 = '';
+    for (var i in strategyReplyResultStr.entries) {
+      strategyReplyResultStr2 += '${i.key}: ${i.value}\n';
+    }
+    return '策略数量：\n$strategyResultStr\n 策略回复字数：\n$strategyReplyResultStr1\n 策略回复字数分布：\n$strategyReplyResultStr2';
   }
 }

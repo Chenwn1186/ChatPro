@@ -103,7 +103,7 @@ class _ChatPageState extends State<ChatPage> {
                                 content: SizedBox(
                                   child: SingleChildScrollView(
                                     child: 
-                                      Text(
+                                      SelectableText(
                                           ChatController().getStrategyResult()),
                                     
                                   ),
