@@ -443,6 +443,9 @@ class ChatController with ChangeNotifier {
     }
   }
 
+  late Future<Map<String, List<List<String>>>> anaDatas;
+  String anaPrompt = '';
+
   // 存储所有对话记录，key 是对话标题
   final Map<String, ImgRecord> _imgRecords = {};
   List<int> finalSelectedImgs = [];
@@ -993,5 +996,52 @@ class ChatController with ChangeNotifier {
       strategyReplyResultStr2 += '${i.key}: ${i.value}\n';
     }
     return '策略数量：\n$strategyResultStr\n 策略回复字数：\n$strategyReplyResultStr1\n 策略回复字数分布：\n$strategyReplyResultStr2';
+  }
+
+  String getUserInput() {
+    String result = '';
+    try {
+      var content = _chats[currentTitle]!.content;
+      for (var i in content) {
+        if (i.role == OpenAIChatMessageRole.user) {
+          result += '${i.content![0].text!};';
+        }
+      }
+      return result;
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController getUsetInputLength 方法出错: $e', stackTrace);
+      return result;
+    }
+  }
+
+  String getBBotInput() {
+    String result = '';
+    try {
+      var content = _chats[currentTitle]!.content;
+      for (var i in content) {
+        if (i.role == OpenAIChatMessageRole.assistant) {
+          result += '${i.content![0].text!.replaceAll('\n', '')};';
+        }
+      }
+      return result;
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController getUsetInputLength 方法出错: $e', stackTrace);
+      return result.replaceAll('\n', '');
+    }
+  }
+  String getABotInput() {
+    String result = '';
+    try {
+      var content = _chats[currentTitle]!.content;
+      for (var i in content) {
+        if (i.role == OpenAIChatMessageRole.assistant) {
+          result += '${i.content![4].text!.replaceAll('\n', '')};';
+        }
+      }
+      return result.replaceAll('\n', '');
+    } catch (e, stackTrace) {
+      Logger.logError('ChatController getUsetInputLength 方法出错: $e', stackTrace);
+      return result;
+    }
   }
 }

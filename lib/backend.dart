@@ -87,7 +87,6 @@ class OpenAIUserInteraction {
             ],
           ),
         ],
-        maxTokens: 600,
       );
 
       // 提取回复内容

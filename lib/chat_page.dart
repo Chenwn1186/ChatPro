@@ -78,6 +78,7 @@ class _ChatPageState extends State<ChatPage> {
                 var len = ChatController().getContentLength();
                 var imgsLen =
                     ChatController().getImgs(widget.chatRecord.title).length;
+                var userInputs = ChatController().getUserInput();
                 return [
                   PopupMenuItem(
                     value: '输入字数: $userInputLen',
@@ -102,15 +103,66 @@ class _ChatPageState extends State<ChatPage> {
                                 title: const Text('策略统计数据'),
                                 content: SizedBox(
                                   child: SingleChildScrollView(
-                                    child: 
-                                      SelectableText(
-                                          ChatController().getStrategyResult()),
-                                    
+                                    child: SelectableText(
+                                        ChatController().getStrategyResult()),
                                   ),
                                 ),
                               );
                             });
-                      })
+                      }),
+                  PopupMenuItem(
+                      value: '用户回复',
+                      child: const Text('用户回复'),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (c) {
+                              return AlertDialog(
+                                title: const Text('用户回复'),
+                                content: SizedBox(
+                                  child: SingleChildScrollView(
+                                    child: SelectableText(userInputs),
+                                  ),
+                                ),
+                              );
+                            });
+                      }),
+                  PopupMenuItem(
+                      value: 'LLM纯文本回复',
+                      child: const Text('纯文本回复'),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (c) {
+                              return AlertDialog(
+                                title: const Text('纯文本回复'),
+                                content: SizedBox(
+                                  child: SingleChildScrollView(
+                                    child: SelectableText(
+                                        ChatController().getBBotInput()),
+                                  ),
+                                ),
+                              );
+                            });
+                      }),
+                  PopupMenuItem(
+                      value: 'LLM带格式回复',
+                      child: const Text('带格式回复'),
+                      onTap: () {
+                        showDialog(
+                            context: context,
+                            builder: (c) {
+                              return AlertDialog(
+                                title: const Text('带格式回复'),
+                                content: SizedBox(
+                                  child: SingleChildScrollView(
+                                    child: SelectableText(
+                                        ChatController().getABotInput()),
+                                  ),
+                                ),
+                              );
+                            });
+                      }),
                 ];
               }),
         ],
