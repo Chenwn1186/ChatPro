@@ -18,7 +18,7 @@ dependencies:
   dart_openai: ^5.1.0
   http: ^1.3.0
   simple_canvas:
-    path: ../simple_canvas
+    path: ../ImagesBoard_FlutterWidget
 
 dev_dependencies:
   flutter_test:
