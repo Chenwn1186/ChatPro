@@ -372,10 +372,7 @@ Future<String> analyseImgOnline(String imagePath) async {
     return '';
   }
   var request = http.MultipartRequest(
-      // 'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
-      'POST',
-      // Uri.parse("http://0.0.0.0:5408/analyseImg"));
-      Uri.parse("http://127.0.0.1:5408/analyseImg"));
+      'POST', Uri.parse("http://127.0.0.1:5408/analyseImg"));
   // 添加图片文件
   var stream = http.ByteStream(imageFile.openRead());
   var length = await imageFile.length();

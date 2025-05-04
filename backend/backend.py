@@ -16,22 +16,30 @@ import json
 # 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
+# 获取 backend.py 所在的目录
+script_dir = os.path.dirname(os.path.abspath(__file__))
 
+# 构建 config.json 的路径（假设 config.json 在 ChatPro 目录）
+config_path = os.path.join(script_dir, '..', 'config.json')
 
 # 读取配置文件
-with open('../config.json', 'r', encoding='utf-8') as f:
-    config = json.load(f)
+try:
+    with open(config_path, 'r', encoding='utf-8') as f:
+        config = json.load(f)
+except FileNotFoundError:
+    logging.error("Config file not found at: %s", config_path)
+    raise
+
+# # 读取配置文件
+# with open('../config.json', 'r', encoding='utf-8') as f:
+#     config = json.load(f)
 
 # 使用从配置文件读取的 API 密钥和基础 URL
 API_KEY = config["backend_apiKey"]
 BASE_URL = config["backend_base_url"]
 client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
 
-# #can use:(doubao)
-# API_KEY = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY"
-# client = OpenAI(api_key=API_KEY, base_url="https://wcode.net/api/gpt/v1")
-# # API_KEY="sk-XIOIPGBOc3agtjmCB73fE6630089490a92Ea220f35F5F166"
-# # client = OpenAI(api_key=API_KEY,base_url="https://vip.yi-zhan.top/v1")
+
 app = Flask(__name__)
 
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
