@@ -1,10 +1,10 @@
 {
     "_apiKey_comment": "对话的API",
-    "apiKey": "sk-lDIxGqCIvASAAMQGFd954108C8D74d3eB4334601D15203Aa",
+    "apiKey": "",
     "_baseUrl_comment": "对话的API地址",
-    "baseUrl": "https://vip.yi-zhan.top",
+    "baseUrl": "",
     "_backend_apiKey_comment": "解析图片的API",
-    "backend_apiKey": "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY",
+    "backend_apiKey": "",
     "_backend_base_url_comment": "解析图片的API地址",
-    "backend_base_url": "https://wcode.net/api/gpt/v1"
+    "backend_base_url": ""
 }
