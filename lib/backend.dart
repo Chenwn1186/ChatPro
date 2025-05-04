@@ -7,8 +7,9 @@ import 'package:dart_openai/dart_openai.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:simple_canvas/simple_canvas.dart';
+import 'package:path/path.dart' as path;
 
-// 日志工具类
+// 日志工具类（保持不变）
 class Logger {
   static const String logFilePath = 'chat_app.log';
 
@@ -28,36 +29,98 @@ class Logger {
   }
 }
 
+// 配置类，用于解析 config.json
+class APIConfig {
+  final String apiKey;
+  final String baseUrl;
+  final String backendApiKey;
+  final String backendBaseUrl;
+
+  APIConfig({
+    required this.apiKey,
+    required this.baseUrl,
+    required this.backendApiKey,
+    required this.backendBaseUrl,
+  });
+
+  factory APIConfig.fromJson(Map<String, dynamic> json) {
+    return APIConfig(
+      apiKey: json['apiKey'] ?? '',
+      baseUrl: json['baseUrl'] ?? '',
+      backendApiKey: json['backend_apiKey'] ?? '',
+      backendBaseUrl: json['backend_base_url'] ?? '',
+    );
+  }
+}
+
+// 加载配置文件
+Future<APIConfig> loadConfig() async {
+  try {
+    // 获取当前工作目录（chat_pro 目录）
+    final currentDir = Directory.current.path;
+    final configPath =
+        path.normalize(path.join(currentDir, 'config.json')); // 改为相对路径
+    final file = File(configPath);
+
+    if (!await file.exists()) {
+      throw Exception('配置文件不存在: $configPath');
+    }
+
+    final contents = await file.readAsString();
+    final jsonData = json.decode(contents);
+    final config = APIConfig.fromJson(jsonData);
+
+    if (config.apiKey.isEmpty || config.baseUrl.isEmpty) {
+      throw Exception('apiKey 或 baseUrl 不能为空');
+    }
+
+    Logger.log('成功加载配置文件: $configPath');
+    return config;
+  } catch (e, stackTrace) {
+    Logger.logError('加载配置文件失败: $e', stackTrace);
+    rethrow;
+  }
+}
 
 class OpenAIUserInteraction {
-  // 静态私有实例，用于存储单例
   static final OpenAIUserInteraction _instance =
       OpenAIUserInteraction._internal();
+  bool _isInitialized = false;
 
-  // 工厂构造函数，返回单例实例
   factory OpenAIUserInteraction() {
     return _instance;
   }
 
-  // String model = "deepseek-chat";
-  // String model = "gpt-3.5-turbo-0125";
   String model = "gpt-4o-mini";
-  List<String> models = ['gpt-4o-mini', 'gpt-3.5-turbo-0125', 'deepseek-chat', 'gpt-4o'];
+  List<String> models = [
+    'gpt-4o-mini',
+    'gpt-3.5-turbo-0125',
+    'deepseek-chat',
+    'gpt-4o'
+  ];
 
-  // 私有构造函数，防止外部实例化
-  OpenAIUserInteraction._internal() {
-    init();
+  OpenAIUserInteraction._internal();
+
+  Future<void> init() async {
+    if (_isInitialized) return;
+    try {
+      final config = await loadConfig();
+      OpenAI.apiKey = config.apiKey;
+      OpenAI.baseUrl = config.baseUrl;
+      _isInitialized = true;
+      Logger.log(
+          'OpenAI API 初始化成功: apiKey=${config.apiKey}, baseUrl=${config.baseUrl}');
+    } catch (e, stackTrace) {
+      _isInitialized = false;
+      Logger.logError('OpenAI API 初始化失败: $e', stackTrace);
+      rethrow;
+    }
   }
 
-  // 初始化 OpenAI API 密钥
-  void init() {
-    // OpenAI.apiKey = "sk-dPrv6dBqbgs5mfgn5Qw264FgXjEO2cQ8n6GWhwav2pLX8hB4";
-    // OpenAI.baseUrl = "https://xiaoai.plus";
-    // OpenAI.apiKey = "sk-PwAHRaa4EySMczCbBf99Cc35743c40B5B43cEc71762324F2";
-    OpenAI.apiKey = "sk-lDIxGqCIvASAAMQGFd954108C8D74d3eB4334601D15203Aa";
-    OpenAI.baseUrl = "https://vip.yi-zhan.top";
-    // OpenAI.apiKey = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY";
-    // OpenAI.baseUrl = "https://wcode.net/api/gpt";
+  Future<void> ensureInitialized() async {
+    if (!_isInitialized) {
+      await init();
+    }
   }
 
   void setModel(String model) {
@@ -68,30 +131,24 @@ class OpenAIUserInteraction {
     return models;
   }
 
-  /// 发送信息并接收 OpenAI 的回复
-  /// [message] 是用户发送的消息
-  /// 返回 OpenAI 的回复
   Future<String> sendMessage(String message) async {
     try {
-      // Logger.log('开始发送消息到 OpenAI: $message');
-      // 创建一个聊天完成请求
+      await ensureInitialized();
+      Logger.log('开始发送消息到 OpenAI: $message');
       final chatCompletion = await OpenAI.instance.chat.create(
         model: model,
         messages: [
           OpenAIChatCompletionChoiceMessageModel(
             role: OpenAIChatMessageRole.user,
             content: [
-              OpenAIChatCompletionChoiceMessageContentItemModel.text(
-                message,
-              ),
+              OpenAIChatCompletionChoiceMessageContentItemModel.text(message),
             ],
           ),
         ],
-      );
+      ).timeout(Duration(seconds: 10));
 
-      // 提取回复内容
       final response = chatCompletion.choices.first.message.content!.first.text;
-      // Logger.log('收到 OpenAI 回复: $response');
+      Logger.log('收到 OpenAI 回复: $response');
       return response.toString();
     } catch (e, stackTrace) {
       Logger.logError('发送消息到 OpenAI 时出错: $e', stackTrace);
@@ -105,12 +162,10 @@ class OpenAIUserInteraction {
       void Function()? onDone,
       {List<OpenAIChatCompletionChoiceMessageModel>? records}) async {
     try {
-      // Logger.log('开始发送消息到 OpenAI: $message');
-      // 创建一个聊天完成请求
+      await ensureInitialized();
+      Logger.log('开始发送消息到 OpenAI: $message');
       var content = [
-        OpenAIChatCompletionChoiceMessageContentItemModel.text(
-          message,
-        ),
+        OpenAIChatCompletionChoiceMessageContentItemModel.text(message),
       ];
       var msg = OpenAIChatCompletionChoiceMessageModel(
           role: OpenAIChatMessageRole.user, content: content);
@@ -119,12 +174,12 @@ class OpenAIUserInteraction {
       var chatCompletion = OpenAI.instance.chat.createStream(
         model: model,
         messages: records,
-        // maxTokens: 600,
       );
       chatCompletion.listen(onData, onDone: onDone);
       Logger.log('===========================聊天记录=========================');
       for (var i in records) {
-        Logger.log('len: ${i.content!.length} ${i.role}: ${i.content!.first.text}');
+        Logger.log(
+            'len: ${i.content!.length} ${i.role}: ${i.content!.first.text}');
       }
     } catch (e, stackTrace) {
       Logger.logError('发送消息到 OpenAI with stream时出错: $e', stackTrace);
@@ -267,7 +322,6 @@ class Prompts {
   }
 }
 
-
 Future<String> analyseImg(String title, List<String> ipath) async {
   var path = ipath.map((e) => e).toList();
   if (path.isEmpty) {
@@ -296,12 +350,10 @@ Future<String> analyseImg(String title, List<String> ipath) async {
   try {
     Logger.log('开始分析图片，标题: $title, 图片路径: $path');
     for (String imagePath in path) {
-      futureResults.add(analyseImgOnline(imagePath).then(
-        (value) {
-          ChatController().checkParsedImgs(title);
-          return value;
-        }
-      ));
+      futureResults.add(analyseImgOnline(imagePath).then((value) {
+        ChatController().checkParsedImgs(title);
+        return value;
+      }));
     }
     var fRes = await Future.wait(futureResults);
     results.addAll(fRes);
@@ -323,7 +375,7 @@ Future<String> analyseImgOnline(String imagePath) async {
       // 'POST', Uri.parse("http://172.16.91.233:5408/analyseImg"));
       'POST',
       // Uri.parse("http://0.0.0.0:5408/analyseImg"));
-      Uri.parse("http://172.16.91.233:5408/analyseImg"));
+      Uri.parse("http://127.0.0.1:5408/analyseImg"));
   // 添加图片文件
   var stream = http.ByteStream(imageFile.openRead());
   var length = await imageFile.length();
@@ -351,5 +403,3 @@ Future<String> analyseImgOnline(String imagePath) async {
   Logger.logError('解析图片失败: ${json.decode(response.body).toString()}');
   return response.body;
 }
-
-

@@ -12,19 +12,26 @@ import time
 import datetime
 import logging
 import requests
-
+import json
 # 配置日志记录
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# 初始化 OpenAI 客户端
-# API_KEY = "3MFOSXFhX8cuMahAJVKnnR9dh31NsKMqecGTX7zX6hnTfYX03bT0fJT9DqMNshBqu"
-# client = OpenAI(api_key=API_KEY, base_url="https://api.stepfun.com/v1")
 
-#can use:(doubao)
-API_KEY = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY"
-client = OpenAI(api_key=API_KEY, base_url="https://wcode.net/api/gpt/v1")
-# API_KEY="sk-XIOIPGBOc3agtjmCB73fE6630089490a92Ea220f35F5F166"
-# client = OpenAI(api_key=API_KEY,base_url="https://vip.yi-zhan.top/v1")
+
+# 读取配置文件
+with open('../config.json', 'r', encoding='utf-8') as f:
+    config = json.load(f)
+
+# 使用从配置文件读取的 API 密钥和基础 URL
+API_KEY = config["backend_apiKey"]
+BASE_URL = config["backend_base_url"]
+client = OpenAI(api_key=API_KEY, base_url=BASE_URL)
+
+# #can use:(doubao)
+# API_KEY = "sk-528.kT3wdhoKY531DD59egtWtRZKT8deOwLVo0i0IxorxyQVePoY"
+# client = OpenAI(api_key=API_KEY, base_url="https://wcode.net/api/gpt/v1")
+# # API_KEY="sk-XIOIPGBOc3agtjmCB73fE6630089490a92Ea220f35F5F166"
+# # client = OpenAI(api_key=API_KEY,base_url="https://vip.yi-zhan.top/v1")
 app = Flask(__name__)
 
 dev = torch.device("cuda" if torch.cuda.is_available() else "cpu")
